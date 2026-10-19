@@ -1,0 +1,1434 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Корзинка</title>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Корзинка">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#F3F8FF">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&display=swap">
+<style>
+/* Layout: one phone centred on a quiet ground; each experimental version is its own file with no switcher.
+   Page colors follow the viewer's theme; the app inside the phone is the stimulus and stays in its own light palette. */
+:root{
+  --page-bg:#ECEFF4; --page-fg:#1C2433; --page-muted:#5A6478; --panel:#FFFFFF; --panel-line:#D6DCE7;
+  --accent:#1E6BD6; --accent-fg:#FFFFFF; --accent-soft:#E1EEFC; --focus:#F39A57;
+  --font-ui:'Manrope','Segoe UI',system-ui,-apple-system,sans-serif;
+  /* app (stimulus) palette, fixed in both themes */
+  --brand:#1E6BD6; --brand-d:#1553B0; --brand-dd:#0E3F8A; --brand-l:#E1EEFC;
+  --peach:#FFB37A; --peach-d:#F39A57; --peach-l:#FFE9D6;
+  --cream:#F3F8FF; --ink:#2B2B2B; --muted:#6B7385; --line:#E2EAF5;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --page-bg:#0D131F; --page-fg:#E6EBF3; --page-muted:#98A3B8; --panel:#161E2C; --panel-line:#2A3547;
+    --accent:#5AA9F5; --accent-fg:#071A33; --accent-soft:#172A45; --focus:#FFB37A; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --page-bg:#0D131F; --page-fg:#E6EBF3; --page-muted:#98A3B8; --panel:#161E2C; --panel-line:#2A3547;
+  --accent:#5AA9F5; --accent-fg:#071A33; --accent-soft:#172A45; --focus:#FFB37A; color-scheme:dark;
+}
+html,body{height:100%}
+body{margin:0;background:var(--page-bg);color:var(--page-fg);font-family:var(--font-ui);-webkit-font-smoothing:antialiased}
+.page{box-sizing:border-box;min-height:100%;display:flex;align-items:center;justify-content:center;gap:48px;padding-inline:16px;padding-block:16px}
+.phone-wrap{flex:none}
+:where(.phone,.phone *,.phone *::before,.phone *::after){box-sizing:border-box}
+:where(.phone *){margin:0;padding:0}
+
+/* ---------- phone frame ---------- */
+.phone{zoom:1.42;position:relative;width:414px;height:868px;border-radius:64px;padding:12px;
+  background:linear-gradient(150deg,#3A3E44 0%,#16181B 45%,#24272B 100%);
+  box-shadow:0 0 0 1.5px #4A4F56 inset,0 2px 0 0 #5A5F66 inset,0 34px 60px -18px rgba(40,50,50,.38),0 12px 28px rgba(40,50,50,.12)}
+.phone:before,.phone:after{content:"";position:absolute;background:#2A2D31;border-radius:2px}
+.phone:before{left:-3px;top:180px;width:3px;height:64px;box-shadow:0 84px 0 #2A2D31}
+.phone:after{right:-3px;top:220px;width:3px;height:96px}
+.screen{position:relative;width:390px;height:844px;border-radius:52px;overflow:hidden;background:var(--cream)}
+.island{position:absolute;top:11px;left:50%;transform:translateX(-50%);width:122px;height:35px;border-radius:20px;background:#0B0B0C;z-index:50}
+.status{height:52px;display:flex;align-items:center;justify-content:space-between;padding:6px 30px 0 40px;font-weight:700;font-size:16px;position:relative;z-index:40}
+.status .ic{display:flex;gap:6px;align-items:center}
+.homebar{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:136px;height:5px;border-radius:3px;background:#1A1A1A;z-index:60}
+
+/* ---------- shared ---------- */
+.nav{height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 20px}
+.nav .t{font-size:17px;font-weight:800;letter-spacing:-.1px}
+.cbtn{width:42px;height:42px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 14px rgba(20,55,130,.08)}
+.btn{height:58px;border-radius:19px;background:linear-gradient(180deg,#3A8BEA 0%,var(--brand) 55%,#1A5DC2 100%);color:#fff;font-weight:800;font-size:18px;
+  display:flex;align-items:center;justify-content:center;gap:10px;box-shadow:0 10px 22px -8px rgba(25,85,190,.55),inset 0 1px 0 rgba(255,255,255,.25)}
+.sec-h{display:flex;align-items:baseline;justify-content:space-between;padding:0 20px;margin-bottom:12px}
+.sec-h b{font-size:20px;font-weight:800;letter-spacing:-.2px}
+.sec-h span{font-size:15px;font-weight:700;color:var(--brand)}
+svg{display:block}
+
+/* ---------- screen 1 ---------- */
+.top{display:flex;align-items:center;justify-content:space-between;padding:4px 20px 0}
+.logo{display:flex;align-items:center;gap:10px}
+.logo .mark{width:42px;height:42px;border-radius:14px;background:linear-gradient(145deg,#3BA4F2,var(--brand-d));display:flex;align-items:center;justify-content:center;box-shadow:0 6px 14px -4px rgba(25,85,190,.5)}
+.logo .word{font-size:25px;font-weight:800;letter-spacing:-.6px;color:var(--brand-dd)}
+.logo .word i{font-style:normal;color:var(--peach-d)}
+.search{margin:14px 20px 0;height:50px;border-radius:16px;background:#fff;display:flex;align-items:center;gap:10px;padding:0 16px;font-size:16px;font-weight:600;color:#98A2B3;box-shadow:0 4px 16px rgba(20,55,130,.06)}
+.hero{position:relative;margin:16px 20px 0;height:296px;border-radius:28px;overflow:hidden;
+  background:radial-gradient(circle at 88% 8%,#6CC4FF 0%,rgba(108,196,255,0) 42%),linear-gradient(150deg,#3BA4F2 0%,var(--brand) 38%,#1550B5 100%);
+  box-shadow:0 18px 34px -16px rgba(25,80,180,.6)}
+.hero .ring{position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.10)}
+.hero-text{position:relative;z-index:3;padding:24px 22px 0}
+.hero-tag{display:inline-flex;align-items:center;gap:6px;height:28px;padding:0 12px;border-radius:14px;background:rgba(255,255,255,.16);color:#fff;font-size:14px;font-weight:700;margin-bottom:12px}
+.hero-title{color:#fff;font-size:25px;line-height:1.14;font-weight:800;letter-spacing:-.4px;width:300px}
+.hero-sub{color:rgba(255,255,255,.88);font-size:15px;line-height:1.35;font-weight:600;width:150px;margin-top:10px}
+.hero .play{margin-top:16px;display:inline-flex;align-items:center;gap:8px;height:46px;padding:0 24px 0 26px;border-radius:23px;background:var(--peach);color:var(--ink);font-weight:800;font-size:17px;box-shadow:0 10px 18px -8px rgba(0,0,0,.35),inset 0 1px 0 rgba(255,255,255,.5)}
+.hero-ill{position:absolute;left:0;top:0;z-index:2}
+.cats{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px}
+.cat{position:relative;height:98px;border-radius:20px;padding:13px 14px;overflow:hidden;font-size:15px;font-weight:800;line-height:1.2}
+.cat svg{position:absolute;right:6px;bottom:4px}
+.tabbar{position:absolute;left:0;right:0;bottom:0;height:90px;background:#fff;display:flex;justify-content:space-around;padding-top:10px;box-shadow:0 -6px 24px rgba(20,40,80,.06);border-radius:26px 26px 0 0}
+.tab{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:14px;font-weight:700;color:#8F98A8;width:80px}
+.tab.on{color:var(--brand)}
+
+/* ---------- screen 2 ---------- */
+.ill-card{margin:6px 20px 0;height:190px;border-radius:26px;overflow:hidden;box-shadow:0 12px 26px -16px rgba(25,70,160,.45)}
+.h1{font-size:28px;font-weight:800;letter-spacing:-.5px;padding:0 20px;margin:18px 0 12px}
+.rules{padding:0 20px;display:flex;flex-direction:column;gap:8px}
+.rule{display:flex;align-items:center;gap:14px;background:#fff;border-radius:18px;padding:10px 14px 10px 10px;min-height:62px;box-shadow:0 3px 12px rgba(20,40,80,.04)}
+.rule .ri{flex:none;width:44px;height:44px;border-radius:14px;background:var(--brand-l);display:flex;align-items:center;justify-content:center}
+.rule .rt{font-size:16px;line-height:1.36;font-weight:600}
+.rule.hl{background:var(--peach-l);box-shadow:inset 0 0 0 1.5px #FFCDA4}
+.rule.hl .ri{background:#fff}
+.rule .rt b{font-weight:800}
+.s-rules .btn{position:absolute;left:20px;right:20px;bottom:40px}
+
+/* ---------- screen 3/4 ---------- */
+.stats{margin:2px 20px 0;background:#fff;border-radius:22px;padding:14px 14px 14px 16px;display:flex;align-items:center;gap:14px;box-shadow:0 6px 18px rgba(20,55,130,.07)}
+.stats .l{flex:1}
+.stats .lab{font-size:17px;font-weight:800;margin-bottom:9px}
+.bar{height:12px;border-radius:6px;background:#E3ECF8;overflow:hidden;position:relative}
+.bar i{position:absolute;left:0;top:0;bottom:0;border-radius:6px;background:linear-gradient(90deg,#4FB3F6,var(--brand))}
+.bar:after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(90deg,transparent 0 calc(10% - 2px),#fff calc(10% - 2px) 10%)}
+.chip{flex:none;display:flex;align-items:center;gap:7px;height:46px;padding:0 14px 0 10px;border-radius:15px;background:var(--brand-l);color:var(--brand-dd);font-size:16px;font-weight:800}
+.prize{margin:10px 20px 0;height:48px;border-radius:17px;display:flex;align-items:center;gap:10px;padding:0 14px 0 8px;font-size:16px;font-weight:800;
+  background:linear-gradient(95deg,#FFE2C8 0%,#FFC796 60%,var(--peach) 100%);box-shadow:inset 0 1px 0 rgba(255,255,255,.6)}
+.prize .gi{width:36px;height:36px;border-radius:12px;background:#fff;display:flex;align-items:center;justify-content:center}
+.garden{position:relative;margin:12px 20px 0;height:238px;border-radius:26px;overflow:hidden;box-shadow:0 14px 28px -18px rgba(25,70,160,.5)}
+.gsvg .rain{opacity:0}
+.plot .pl{transform-box:fill-box;transform-origin:50% 100%;transition:transform .6s cubic-bezier(.3,1.6,.5,1)}
+.plot.st0 .pl{transform:scale(1)}
+.plot .v-sprout,.plot .v-young,.plot .v-ripe{display:none}
+.plot.st0 .v-sprout,.plot.st1 .v-young,.plot.st2 .v-ripe{display:inline}
+.plot.st1 .pl{transform:scale(.8)}
+.plot.st2 .pl{transform:scale(1)}
+.plot .halo{opacity:0;transform-box:fill-box;transform-origin:50% 50%;transition:opacity .3s}
+.plot.ripe .halo{opacity:1;animation:halo 1.6s ease-in-out infinite}
+.plot .arrow{opacity:0;transition:opacity .25s}
+.plot.ripe .arrow{opacity:1}
+.plot.ripe .arrow use{transform-box:fill-box;animation:hop 1s ease-in-out infinite}
+@keyframes halo{0%,100%{transform:scale(.94)}50%{transform:scale(1.06)}}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.hint{position:absolute;top:12px;right:12px;width:200px;padding:8px 12px;border-radius:14px;background:rgba(255,255,255,.94);font-size:14px;line-height:1.3;font-weight:700;color:var(--brand-dd);box-shadow:0 6px 14px -8px rgba(15,45,110,.4)}
+body.static *{animation:none!important;transition:none!important}
+.s-game .btn,.s-end .btn.go{margin:12px 20px 0}
+.prods{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 20px}
+.prod{background:#fff;border-radius:20px;padding:7px 7px 10px;box-shadow:0 4px 14px rgba(20,40,80,.05)}
+.prod .pi{height:72px;border-radius:14px;display:flex;align-items:center;justify-content:center}
+.prod .pn{font-size:14px;line-height:1.3;font-weight:600;min-height:37px;margin:8px 3px 4px}
+.prod .pp{display:flex;align-items:center;justify-content:space-between;padding:0 1px 0 3px}
+.prod .pp b{font-size:17px;font-weight:800}
+.plus{width:30px;height:30px;border-radius:10px;background:var(--brand);display:flex;align-items:center;justify-content:center}
+.s-game .sec-h,.s-end .sec-h{margin-top:20px}
+
+/* end screen */
+.veil{position:absolute;left:0;right:0;top:104px;height:466px;z-index:20;
+  background:rgba(243,248,255,.55);-webkit-backdrop-filter:blur(1px) saturate(.3);backdrop-filter:blur(1px) saturate(.3)}
+.modal{position:absolute;left:34px;right:34px;top:210px;z-index:30;background:#fff;border-radius:28px;padding:24px 22px 22px;text-align:center;
+  box-shadow:0 30px 60px -20px rgba(15,45,110,.45),0 0 0 1px rgba(0,0,0,.02)}
+.modal .mi{width:76px;height:76px;margin:-62px auto 12px;border-radius:26px;background:linear-gradient(150deg,#FFD0A8,var(--peach));display:flex;align-items:center;justify-content:center;box-shadow:0 12px 22px -10px rgba(220,120,50,.7),0 0 0 6px #fff}
+.modal .mt{font-size:23px;font-weight:800;letter-spacing:-.4px;margin-bottom:8px}
+.modal .mb{font-size:17px;line-height:1.4;font-weight:600;color:#4E5566;min-height:48px}
+.modal .btn{margin-top:18px;height:56px}
+
+/* ---------- prototype layer ---------- */
+#phone{zoom:var(--s,1)}
+.screen{color:var(--ink)}   /* the app keeps its own ink in both page themes */
+:where(.screen) button{font:inherit;color:inherit;background:none;border:0;padding:0;margin:0;cursor:pointer;text-align:inherit;-webkit-tap-highlight-color:transparent}
+.screen button:focus-visible,.screen summary:focus-visible{outline:3px solid #F39A57;outline-offset:2px}
+.screen .btn,.screen .play,.screen .cbtn,.screen .plus,.screen .cat,.screen .tab,.screen .row{transition:transform .12s ease,filter .12s ease}
+.screen .btn:active,.screen .play:active,.screen .cbtn:active,.screen .plus:active,.screen .cat:active,.screen .row:active{transform:scale(.97)}
+.screen .btn{width:350px;color:#fff}
+.screen .cat{text-align:left;color:var(--ink);display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-start}
+.screen .tab{color:#8F98A8;position:relative}.screen .tab.on{color:var(--brand)}
+.screen .search{cursor:pointer;width:350px}
+.screen .hero{cursor:pointer}
+.sec-h button{font-size:15px;font-weight:700;color:var(--brand)}
+.overlay{position:absolute;inset:0;pointer-events:none;z-index:40}
+.view{position:absolute;inset:0;background:var(--cream);overflow:hidden;visibility:hidden;will-change:transform}
+.view.on{visibility:visible}
+.view.root .nav [data-act="back"]{visibility:hidden}
+.screen{--top:52px;touch-action:manipulation}
+.sp{height:var(--top)}
+.nav .ph{width:42px;height:42px}
+.scroll{position:absolute;left:0;right:0;top:calc(var(--top) + 54px);bottom:0;overflow-y:auto;overscroll-behavior:contain;padding-bottom:28px;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+.has-tabs .scroll{bottom:90px}
+.scroll.below-input{top:calc(var(--top) + 120px)}
+.scroll > .sec-h:first-child,.scroll > .cats:first-child{margin-top:6px}
+
+/* product grid (categories, search) */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:0 20px}
+.grid2 .prod{display:flex;flex-direction:column}
+.grid2 .prod .pi{height:104px}
+.grid2 .prod .pn{font-size:15px;min-height:40px}
+.grid2 .pp{margin-top:auto}
+.count{padding:0 20px;margin:2px 0 12px;font-size:15px;font-weight:600;color:var(--muted)}
+
+/* badge on the cart tab */
+.badge{position:absolute;top:-6px;left:calc(50% + 4px);min-width:24px;height:24px;border-radius:12px;padding:0 6px;background:var(--peach-d);color:#fff;font-size:14px;font-weight:800;line-height:20px;text-align:center;border:2px solid #fff;box-sizing:border-box}
+
+/* cart */
+.cart-row{display:flex;align-items:center;gap:12px;background:#fff;border-radius:20px;padding:10px 12px 10px 10px;margin:0 20px 8px;box-shadow:0 3px 12px rgba(20,40,80,.04)}
+.cart-row .ci{width:66px;height:58px;border-radius:14px;flex:none;display:flex;align-items:center;justify-content:center}
+.cart-row .cx{flex:1;min-width:0}
+.cart-row .cn{font-size:15px;font-weight:600;line-height:1.3}
+.cart-row .cp{font-size:16px;font-weight:800;margin-top:4px}
+.step{flex:none;display:flex;align-items:center;gap:6px;background:var(--brand-l);border-radius:12px;padding:4px}
+.step button{width:30px;height:30px;border-radius:9px;background:#fff;display:flex;align-items:center;justify-content:center;color:var(--brand-dd)}
+.step b{min-width:20px;text-align:center;font-size:16px}
+.total{margin:14px 20px 0;padding:16px 18px;background:#fff;border-radius:20px;display:flex;flex-direction:column;gap:8px}
+.total div{display:flex;justify-content:space-between;font-size:15px;color:var(--muted);font-weight:600}
+.total div.sum{font-size:19px;color:var(--ink);font-weight:800}
+.scroll .btn.wide{margin:14px 20px 0}
+.empty{display:flex;flex-direction:column;align-items:center;text-align:center;padding:48px 34px 0;gap:10px}
+.empty .eic{width:96px;height:96px;border-radius:32px;background:var(--brand-l);display:flex;align-items:center;justify-content:center;margin-bottom:6px}
+.empty .et{font-size:21px;font-weight:800;letter-spacing:-.3px}
+.empty .es{font-size:15px;color:var(--muted);line-height:1.45}
+.empty .btn{margin-top:14px;width:260px}
+
+/* search */
+.input{position:absolute;left:20px;right:20px;top:calc(var(--top) + 58px);height:52px;border-radius:16px;background:#fff;display:flex;align-items:center;gap:10px;padding:0 16px;box-shadow:0 4px 16px rgba(20,55,130,.06);border:2px solid var(--brand-l)}
+.input:focus-within{border-color:var(--brand)}
+.input input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:17px;font-weight:600;color:var(--ink)}
+.input input::placeholder{color:#98A2B3}
+.chips{display:flex;flex-wrap:wrap;gap:8px;padding:0 20px;margin-bottom:22px}
+.chip2{height:40px;padding:0 16px;border-radius:20px;background:#fff;font-size:15px;font-weight:700;display:flex;align-items:center;box-shadow:0 3px 10px rgba(20,40,80,.06)}
+.nores{padding:30px 20px;text-align:center;font-size:16px;font-weight:600;color:var(--muted)}
+
+/* notifications */
+.ntf{display:flex;gap:12px;background:#fff;border-radius:20px;padding:14px;margin:0 20px 10px;width:350px;text-align:left;box-shadow:0 3px 12px rgba(20,40,80,.04)}
+.ntf .ni{width:46px;height:46px;border-radius:15px;flex:none;display:flex;align-items:center;justify-content:center}
+.ntf .nt{font-size:15px;font-weight:800;line-height:1.3}
+.ntf .nb{font-size:14px;color:var(--muted);line-height:1.4;margin-top:3px}
+.ntf .nd{font-size:14px;color:#98A2B3;margin-top:6px;font-weight:600}
+.ntf.new .nt::after{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--peach-d);margin-left:6px;vertical-align:middle}
+
+/* profile */
+.pf-head{display:flex;align-items:center;gap:14px;padding:4px 20px 0}
+.ava{width:60px;height:60px;border-radius:50%;background:linear-gradient(150deg,#6CC4FF,var(--brand));display:flex;align-items:center;justify-content:center;color:#fff;flex:none}
+.pf-name{font-size:21px;font-weight:800;letter-spacing:-.3px}
+.pf-sub{font-size:14px;color:var(--muted);font-weight:600;margin-top:2px}
+.lcard{position:relative;margin:16px 20px 0;height:168px;border-radius:26px;padding:20px 22px;color:#fff;overflow:hidden;
+  background:radial-gradient(circle at 90% 0%,#6CC4FF 0%,rgba(108,196,255,0) 45%),linear-gradient(150deg,#3BA4F2 0%,var(--brand) 45%,#1550B5 100%);box-shadow:0 16px 30px -16px rgba(25,80,180,.6)}
+.lcard .lt{font-size:15px;font-weight:700;opacity:.9}
+.lcard .lp{font-size:34px;font-weight:800;letter-spacing:-.8px;margin-top:6px}
+.lcard .ls{font-size:14px;font-weight:600;opacity:.85}
+.lcard .bc{position:absolute;right:20px;bottom:18px;background:#fff;border-radius:10px;padding:8px 10px}
+.lcard .ring{position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.12)}
+.menu{margin:14px 20px 0;background:#fff;border-radius:22px;overflow:hidden;box-shadow:0 3px 12px rgba(20,40,80,.04)}
+.menu .row{display:flex;align-items:center;gap:12px;width:100%;padding:13px 14px;font-size:16px;font-weight:700;border-bottom:1px solid var(--line);text-align:left}
+.menu .row:last-child{border-bottom:0}
+.menu .mi2{width:40px;height:40px;border-radius:13px;background:var(--brand-l);display:flex;align-items:center;justify-content:center;flex:none}
+.menu .rs{display:block;font-size:14px;font-weight:600;color:var(--muted);margin-top:2px}
+.menu .chev{margin-left:auto;flex:none}
+
+/* checkout */
+.co-sec{margin:0 20px 18px}
+#co-body{padding-top:8px}
+.co-h{font-size:18px;font-weight:800;letter-spacing:-.2px;margin-bottom:10px}
+.seg2{display:grid;grid-template-columns:1fr 1fr;gap:4px;padding:4px;background:#fff;border-radius:16px;margin-bottom:10px;box-shadow:0 3px 12px rgba(20,40,80,.05)}
+.seg2 button{height:44px;border-radius:12px;font-size:16px;font-weight:800;color:var(--muted);text-align:center}
+.seg2 button[aria-pressed="true"]{background:var(--brand);color:#fff}
+.co-card{display:flex;gap:12px;align-items:center;background:#fff;border-radius:18px;padding:14px;box-shadow:0 3px 12px rgba(20,40,80,.04)}
+.co-card .ai{width:44px;height:44px;border-radius:14px;background:var(--brand-l);display:flex;align-items:center;justify-content:center;flex:none}
+.co-card .at{font-size:16px;font-weight:800}
+.co-card .as{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.4;font-weight:600}
+.co-sec .chips{padding:0;margin:0}
+.chip2.on{background:var(--brand);color:#fff}
+.co-sec .menu{margin:0}
+.radio{width:24px;height:24px;border-radius:50%;border:2px solid #C5CEDC;flex:none}
+.radio.on{border:7px solid var(--brand)}
+.co-sec + .total{margin-top:0}
+.co-note{font-size:14px;color:var(--muted);text-align:center;margin:12px 34px 0;line-height:1.4;font-weight:600}
+.done-wrap{position:absolute;left:0;right:0;top:var(--top);bottom:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:0 20px 40px;gap:10px}
+.done-wrap .ok{width:104px;height:104px;border-radius:50%;background:linear-gradient(150deg,#6CC4FF,var(--brand));display:flex;align-items:center;justify-content:center;box-shadow:0 18px 32px -14px rgba(25,80,180,.65);margin-bottom:10px}
+.done-wrap .et{font-size:26px;font-weight:800;letter-spacing:-.5px}
+.done-wrap .es{font-size:16px;color:var(--muted);font-weight:600;line-height:1.45}
+.done-wrap .co-card{width:350px;text-align:left;margin:10px 0 6px}
+.done-wrap .btn{margin-top:4px}
+.screen .btn.ghost{background:#fff;color:var(--brand-dd);box-shadow:inset 0 0 0 2px var(--brand-l)}
+.order{background:#fff;border-radius:20px;margin:0 20px 10px;padding:16px;box-shadow:0 3px 12px rgba(20,40,80,.04)}
+.order .oh{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:17px;font-weight:800}
+.order .st{font-size:14px;font-weight:800;color:#1B7A3E;background:#E3F5E9;border-radius:8px;padding:3px 8px;flex:none}
+.order .os{font-size:15px;color:var(--muted);margin-top:6px;line-height:1.4;font-weight:600}
+.order .oi{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap}
+.order .oi span{width:46px;height:40px;border-radius:12px;display:flex;align-items:center;justify-content:center}
+
+/* help */
+.faq details{background:#fff;border-radius:20px;margin:0 20px 8px;padding:15px 16px;box-shadow:0 3px 12px rgba(20,40,80,.04)}
+.faq summary{font-size:16px;font-weight:800;cursor:pointer;list-style:none;display:flex;justify-content:space-between;gap:10px;line-height:1.35}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary::after{content:"+";font-size:22px;line-height:20px;color:var(--brand);flex:none}
+.faq details[open] summary::after{content:"−"}
+.faq p{font-size:15px;line-height:1.5;color:#4E5566;margin-top:8px;font-weight:500}
+
+/* address */
+.addr{display:flex;gap:12px;align-items:flex-start;background:#fff;border-radius:20px;padding:16px;margin:0 20px 10px;box-shadow:0 3px 12px rgba(20,40,80,.04)}
+.addr .ai{width:44px;height:44px;border-radius:14px;background:var(--brand-l);display:flex;align-items:center;justify-content:center;flex:none}
+.addr .at{font-size:16px;font-weight:800}
+.addr .as{font-size:14px;color:var(--muted);margin-top:3px;line-height:1.4;font-weight:600}
+.tag{display:inline-block;margin-top:8px;font-size:14px;font-weight:700;color:var(--brand-dd);background:var(--brand-l);border-radius:8px;padding:3px 8px}
+
+/* watering */
+.gsvg .can-a,.gsvg .bed-a,.gsvg .rd{transform-box:fill-box}
+.gsvg .can-a{transform-origin:30% 75%}
+.gsvg .bed-a{transform-origin:50% 100%}
+.gsvg .drops-a{transition:opacity .2s}
+.gsvg .rain{opacity:0}
+.watering .gsvg .drops-a{opacity:0}
+.watering .gsvg .rain{opacity:1}
+.watering .gsvg .can-a{animation:pour 1.1s ease-in-out}
+.watering .gsvg .rd{animation:fall .55s linear infinite}
+.harvest .gsvg .bed-a{animation:boing .5s ease-out}
+@keyframes pour{0%{transform:rotate(0)}25%,75%{transform:rotate(16deg)}100%{transform:rotate(0)}}
+@keyframes fall{0%{transform:translate(0,0);opacity:0}15%{opacity:1}100%{transform:translate(-4px,64px);opacity:0}}
+@keyframes boing{0%{transform:scale(1,1)}40%{transform:scale(1.02,1.07)}100%{transform:scale(1,1)}}
+.plus1{position:absolute;left:50%;top:34%;z-index:4;display:flex;align-items:center;gap:6px;height:40px;padding:0 14px 0 10px;border-radius:20px;background:#fff;color:var(--brand-dd);font-size:18px;font-weight:800;box-shadow:0 10px 20px -8px rgba(15,45,110,.45);opacity:0;transform:translate(-50%,10px) scale(.6);pointer-events:none}
+.harvest .plus1{animation:rise 1s ease-out forwards}
+@keyframes rise{0%{opacity:0;transform:translate(-50%,10px) scale(.6)}25%{opacity:1;transform:translate(-50%,-6px) scale(1)}70%{opacity:1;transform:translate(-50%,-26px) scale(1)}100%{opacity:0;transform:translate(-50%,-44px) scale(1)}}
+.bump{animation:bump .45s ease-out}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.12)}100%{transform:scale(1)}}
+.bar i{transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.screen .btn[disabled],.screen .btn[aria-disabled="true"]{cursor:default;filter:saturate(.85)}
+
+/* livelier garden */
+.pick{position:absolute;width:88px;border-radius:22px;z-index:3;cursor:pointer}
+.flyer{position:absolute;z-index:25;pointer-events:none}
+.flyer svg{display:block}
+.plot.nudge .pl{animation:wiggle .5s ease-in-out}
+@keyframes wiggle{0%,100%{transform:scale(1) rotate(0)}25%{transform:scale(1.07) rotate(-6deg)}75%{transform:scale(1.07) rotate(6deg)}}
+.hint{transition:background .3s}
+.hint.flash{animation:flash .7s ease-in-out}
+@keyframes flash{40%{background:#FFE9D6;transform:scale(1.04)}}
+
+/* attempts are over */
+.view .veil{top:calc(var(--top) + 52px)}
+.view .modal{top:calc(var(--top) + 158px)}
+.view .veil{opacity:0;pointer-events:none;visibility:hidden;transition:opacity .35s ease,visibility 0s linear .35s}
+.view .modal{opacity:0;pointer-events:none;visibility:hidden;transform:translateY(18px) scale(.96);transition:opacity .3s ease,transform .38s cubic-bezier(.2,.9,.25,1.2),visibility 0s linear .38s}
+.view.spent .veil,.view.rewarded .veil{opacity:1;pointer-events:auto;visibility:inherit;transition-delay:0s}
+.view.spent:not(.rewarded) .modal:not(.reward),.view.rewarded .modal.reward{opacity:1;pointer-events:auto;visibility:inherit;transform:none;transition-delay:0s}
+.modal.reward .mi{background:linear-gradient(150deg,#FFE7B0,#FFC25E)}
+.done-wrap .gift{text-align:center;line-height:1.35;font-size:15px;font-weight:800;color:#8A4A12;background:var(--peach-l);border-radius:12px;padding:8px 14px;margin-top:2px}
+.screen .modal .btn{width:100%}
+
+.toast{position:absolute;left:50%;bottom:112px;z-index:70;transform:translate(-50%,12px);opacity:0;pointer-events:none;max-width:320px;width:max-content;
+  background:#1C2433;color:#fff;font-size:15px;font-weight:700;line-height:1.35;text-align:center;padding:12px 18px;border-radius:16px;box-shadow:0 12px 24px -10px rgba(0,0,0,.5);transition:opacity .2s,transform .25s}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+body.bare{background:var(--cream)}
+body.bare .page{padding:0;align-items:flex-start;gap:0}
+body.bare .phone{width:390px;height:auto;padding:0;border-radius:0;background:none;box-shadow:none}
+body.bare .phone:before,body.bare .phone:after,body.bare .island,body.bare .status,body.bare .homebar{display:none}
+body.bare .screen{--top:10px;border-radius:0;height:var(--h,844px)}
+body.bare .screen button{-webkit-user-select:none;user-select:none}
+
+@media (prefers-reduced-motion: reduce){
+  .view{transition:none!important}
+  .watering .gsvg .can-a,.watering .gsvg .rd,.harvest .gsvg .bed-a,.bump{animation:none}
+  .harvest .plus1{animation:none;opacity:1;transform:translate(-50%,-26px)}
+  .plot.ripe .halo,.plot.ripe .arrow use,.plot.nudge .pl,.hint.flash{animation:none}
+  .view .modal,.view .veil,.bar i{transition:none}
+}
+</style>
+
+</head>
+<body>
+<!-- ======== SVG sprite ======== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <linearGradient id="gSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C6E3FA"/><stop offset=".62" stop-color="#EAF5FD"/><stop offset="1" stop-color="#FFF4E4"/></linearGradient>
+  <linearGradient id="gWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#C98A52"/><stop offset="1" stop-color="#A86836"/></linearGradient>
+  <linearGradient id="gRim" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E4AA6E"/><stop offset="1" stop-color="#CB8B50"/></linearGradient>
+  <linearGradient id="gSoil" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7E4F33"/><stop offset="1" stop-color="#5E3A25"/></linearGradient>
+  <linearGradient id="gCan" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4FAEF5"/><stop offset="1" stop-color="#1A5DC2"/></linearGradient>
+  <linearGradient id="gPeach" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFCB9F"/><stop offset="1" stop-color="#FF9F5C"/></linearGradient>
+  <linearGradient id="gCoin" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE3A3"/><stop offset=".55" stop-color="#FFC25E"/><stop offset="1" stop-color="#F29B3A"/></linearGradient>
+  <linearGradient id="gHill1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ADDDB2"/><stop offset="1" stop-color="#94D29C"/></linearGradient>
+  <linearGradient id="gHill2" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7CC48A"/><stop offset="1" stop-color="#69B67A"/></linearGradient>
+  <radialGradient id="gSun"><stop offset=".55" stop-color="#FFD98A"/><stop offset="1" stop-color="#FFD98A" stop-opacity="0"/></radialGradient>
+  <radialGradient id="gTom" cx=".35" cy=".35"><stop offset="0" stop-color="#FF8A70"/><stop offset="1" stop-color="#E8432F"/></radialGradient>
+  <radialGradient id="gCab" cx=".4" cy=".35"><stop offset="0" stop-color="#C8EFA9"/><stop offset="1" stop-color="#6CC067"/></radialGradient>
+  <radialGradient id="gPump" cx=".4" cy=".35"><stop offset="0" stop-color="#FFD2AA"/><stop offset="1" stop-color="#FF9C55"/></radialGradient>
+
+  <!-- coin -->
+  <symbol id="coin" viewBox="0 0 40 40">
+    <circle cx="20" cy="21.5" r="17" fill="#E08A2E"/>
+    <circle cx="20" cy="19" r="17" fill="url(#gCoin)"/>
+    <circle cx="20" cy="19" r="12" fill="none" stroke="#FFF2D4" stroke-width="2" opacity=".8"/>
+    <path d="M20 11.5l2.3 4.8 5.2.6-3.9 3.6 1 5.2-4.6-2.6-4.6 2.6 1-5.2-3.9-3.6 5.2-.6z" fill="#fff" opacity=".95"/>
+  </symbol>
+
+  <!-- water drop -->
+  <symbol id="drop" viewBox="0 0 24 24">
+    <path d="M12 2.5C9 7 5.5 10.6 5.5 14.6a6.5 6.5 0 0013 0C18.5 10.6 15 7 12 2.5z" fill="#2BB3D6"/>
+    <path d="M9 14.2c0 2 1.2 3.4 2.9 3.8" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none" opacity=".8"/>
+  </symbol>
+  <symbol id="dropo" viewBox="0 0 24 24">
+    <path d="M12 3C9 7.4 5.6 10.9 5.6 14.8a6.4 6.4 0 0012.8 0C18.4 10.9 15 7.4 12 3z" fill="none" stroke="#fff" stroke-width="2.4" stroke-linejoin="round"/>
+    <path d="M8 19.5l9-12" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+
+  <!-- watering can -->
+  <symbol id="can" viewBox="0 0 130 96">
+    <path d="M28 30 C10 30 8 62 30 66" fill="none" stroke="#1553B0" stroke-width="7" stroke-linecap="round"/>
+    <path d="M86 52 L116 22" stroke="#1A5DC2" stroke-width="9" stroke-linecap="round"/>
+    <rect x="106" y="9" width="18" height="21" rx="5" transform="rotate(45 115 19.5)" fill="#2A78DC"/>
+    <rect x="30" y="28" width="62" height="58" rx="15" fill="url(#gCan)"/>
+    <rect x="25" y="22" width="72" height="13" rx="6.5" fill="#3C95EA"/>
+    <path d="M44 22 Q61 2 78 22" fill="none" stroke="#1553B0" stroke-width="6" stroke-linecap="round"/>
+    <rect x="38" y="42" width="9" height="32" rx="4.5" fill="#fff" opacity=".22"/>
+    <circle cx="70" cy="58" r="10" fill="#FFB37A"/>
+    <path d="M70 52 c-3 4 -5 6 -5 8.5 a5 5 0 0010 0c0-2.5-2-4.5-5-8.5z" fill="#fff"/>
+  </symbol>
+
+  <linearGradient id="gCanP" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFD2AC"/><stop offset="1" stop-color="#FF9A52"/></linearGradient>
+  <symbol id="canP" viewBox="0 0 130 96">
+    <path d="M28 30 C10 30 8 62 30 66" fill="none" stroke="#E9853F" stroke-width="7" stroke-linecap="round"/>
+    <path d="M86 52 L116 22" stroke="#F08C46" stroke-width="9" stroke-linecap="round"/>
+    <rect x="106" y="9" width="18" height="21" rx="5" transform="rotate(45 115 19.5)" fill="#FFB37A"/>
+    <rect x="30" y="28" width="62" height="58" rx="15" fill="url(#gCanP)"/>
+    <rect x="25" y="22" width="72" height="13" rx="6.5" fill="#FFC394"/>
+    <path d="M44 22 Q61 2 78 22" fill="none" stroke="#E9853F" stroke-width="6" stroke-linecap="round"/>
+    <rect x="38" y="42" width="9" height="32" rx="4.5" fill="#fff" opacity=".4"/>
+    <circle cx="70" cy="58" r="10" fill="#fff"/>
+    <path d="M70 52 c-3 4 -5 6 -5 8.5 a5 5 0 0010 0c0-2.5-2-4.5-5-8.5z" fill="#2BB3D6"/>
+  </symbol>
+
+  <!-- plants -->
+  <symbol id="carrot" viewBox="0 0 40 56">
+    <path d="M20 40 C14 26 6 22 4 12 C12 14 17 22 20 34Z" fill="#4FAE59"/>
+    <path d="M20 40 C26 26 34 22 36 10 C28 14 23 22 20 34Z" fill="#5DBB63"/>
+    <path d="M20 40 C17 24 19 12 20 2 C23 12 23 24 20 40Z" fill="#7ACB6E"/>
+    <path d="M10 44 Q20 34 30 44 L24 56 L16 56Z" fill="#FF8A3D"/>
+    <path d="M14 46 h5 M21 50 h5" stroke="#E2701F" stroke-width="1.6" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="cabbage" viewBox="0 0 60 50">
+    <ellipse cx="30" cy="30" rx="27" ry="19" fill="#5DB85B"/>
+    <path d="M6 30 C8 16 20 10 30 14 C22 18 18 26 20 38Z" fill="#7FCB6E"/>
+    <path d="M54 30 C52 16 40 10 30 14 C38 18 42 26 40 38Z" fill="#7FCB6E"/>
+    <circle cx="30" cy="27" r="13" fill="url(#gCab)"/>
+    <path d="M30 16 C26 22 26 30 30 38 M24 22 C28 24 30 26 30 30" stroke="#5DB85B" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="tomato" viewBox="0 0 64 80">
+    <rect x="30" y="4" width="4" height="74" rx="2" fill="#B98250"/>
+    <path d="M32 72 C20 66 12 56 14 44 C22 50 28 56 32 66Z" fill="#4FAE59"/>
+    <path d="M32 60 C44 56 52 46 52 34 C44 38 36 46 32 56Z" fill="#5DBB63"/>
+    <path d="M32 40 C22 36 16 28 16 18 C24 22 30 28 32 36Z" fill="#6CC367"/>
+    <path d="M32 28 C40 24 46 16 46 8 C40 12 34 18 32 24Z" fill="#7ACB6E"/>
+    <circle cx="20" cy="35" r="9" fill="url(#gTom)"/><circle cx="44" cy="23" r="8.5" fill="url(#gTom)"/><circle cx="44" cy="51" r="10" fill="url(#gTom)"/><circle cx="21" cy="59" r="7.5" fill="url(#gTom)"/>
+    <g fill="#3D9A4B"><path d="M20 26.5 l2 2.5 3-.5-2 2.3-3-.6-3 .6-2-2.3 3 .5z"/><path d="M44 15 l2 2.5 3-.5-2 2.3-3-.6-3 .6-2-2.3 3 .5z"/><path d="M44 41.5 l2 2.5 3-.5-2 2.3-3-.6-3 .6-2-2.3 3 .5z"/></g>
+    <g fill="#fff" opacity=".55"><ellipse cx="17" cy="32" rx="2.4" ry="1.6"/><ellipse cx="41" cy="20" rx="2.2" ry="1.5"/><ellipse cx="40" cy="47" rx="2.6" ry="1.8"/></g>
+  </symbol>
+  <symbol id="pumpkin" viewBox="0 0 64 50">
+    <path d="M32 12 C32 6 36 3 40 3" stroke="#5B8A3A" stroke-width="4" fill="none" stroke-linecap="round"/>
+    <path d="M38 10 C46 4 54 8 54 12 C48 14 42 14 38 10Z" fill="#6CC367"/>
+    <ellipse cx="18" cy="30" rx="14" ry="17" fill="#FF9C55"/><ellipse cx="46" cy="30" rx="14" ry="17" fill="#FF9C55"/>
+    <ellipse cx="32" cy="30" rx="16" ry="18" fill="url(#gPump)"/>
+    <path d="M24 16 C21 24 21 36 24 44 M40 16 C43 24 43 36 40 44" stroke="#F08A44" stroke-width="2" fill="none"/>
+    <ellipse cx="27" cy="22" rx="3" ry="5" fill="#fff" opacity=".35"/>
+  </symbol>
+  <symbol id="sprout" viewBox="0 0 40 40">
+    <path d="M20 40 C20 30 20 24 20 18" stroke="#4FAE59" stroke-width="3.5" stroke-linecap="round" fill="none"/>
+    <path d="M20 22 C10 24 4 16 4 8 C14 8 20 14 20 22Z" fill="#7ACB6E"/>
+    <path d="M20 18 C28 20 36 14 36 4 C26 4 20 10 20 18Z" fill="#5DBB63"/>
+  </symbol>
+
+  <!-- garden bed -->
+  <symbol id="bed" viewBox="0 0 300 150">
+    <ellipse cx="150" cy="142" rx="146" ry="8" fill="#2F4A3A" opacity=".16"/>
+    <path d="M14 98 C40 76 260 76 286 98 L286 104 L14 104Z" fill="url(#gSoil)"/>
+    <g fill="#4E2F1E" opacity=".55"><ellipse cx="46" cy="94" rx="8" ry="2.4"/><ellipse cx="104" cy="90" rx="9" ry="2.4"/><ellipse cx="162" cy="90" rx="9" ry="2.4"/><ellipse cx="222" cy="91" rx="9" ry="2.4"/><ellipse cx="268" cy="95" rx="7" ry="2.2"/></g>
+    <use href="#carrot" x="26" y="44" width="40" height="56"/>
+    <use href="#cabbage" x="74" y="54" width="62" height="50"/>
+    <use href="#tomato" x="136" y="18" width="62" height="80"/>
+    <use href="#pumpkin" x="196" y="52" width="58" height="46"/>
+    <use href="#sprout" x="250" y="62" width="34" height="34"/>
+    <rect x="8" y="96" width="284" height="46" rx="11" fill="url(#gWood)"/>
+    <path d="M18 112 H282 M18 126 H282" stroke="#94592F" stroke-width="2" opacity=".45"/>
+    <path d="M78 98 v44 M150 98 v44 M222 98 v44" stroke="#94592F" stroke-width="2" opacity=".3"/>
+    <rect x="4" y="92" width="292" height="12" rx="6" fill="url(#gRim)"/>
+    <rect x="14" y="94" width="120" height="3" rx="1.5" fill="#fff" opacity=".28"/>
+  </symbol>
+
+  <!-- the game bed in two layers, so each plant can grow between them -->
+  <symbol id="bedSoil" viewBox="0 0 300 150">
+    <ellipse cx="150" cy="142" rx="146" ry="8" fill="#2F4A3A" opacity=".16"/>
+    <path d="M14 98 C40 76 260 76 286 98 L286 104 L14 104Z" fill="url(#gSoil)"/>
+    <g fill="#4E2F1E" opacity=".55"><ellipse cx="46" cy="94" rx="8" ry="2.4"/><ellipse cx="104" cy="90" rx="9" ry="2.4"/><ellipse cx="162" cy="90" rx="9" ry="2.4"/><ellipse cx="222" cy="91" rx="9" ry="2.4"/><ellipse cx="268" cy="95" rx="7" ry="2.2"/></g>
+  </symbol>
+  <symbol id="bedBox" viewBox="0 0 300 150">
+    <rect x="8" y="96" width="284" height="46" rx="11" fill="url(#gWood)"/>
+    <path d="M18 112 H282 M18 126 H282" stroke="#94592F" stroke-width="2" opacity=".45"/>
+    <path d="M78 98 v44 M150 98 v44 M222 98 v44" stroke="#94592F" stroke-width="2" opacity=".3"/>
+    <rect x="4" y="92" width="292" height="12" rx="6" fill="url(#gRim)"/>
+    <rect x="14" y="94" width="120" height="3" rx="1.5" fill="#fff" opacity=".28"/>
+  </symbol>
+  <symbol id="tomatoYoung" viewBox="0 0 64 80">
+    <rect x="30" y="4" width="4" height="74" rx="2" fill="#B98250"/>
+    <path d="M32 72 C20 66 12 56 14 44 C22 50 28 56 32 66Z" fill="#4FAE59"/>
+    <path d="M32 60 C44 56 52 46 52 34 C44 38 36 46 32 56Z" fill="#5DBB63"/>
+    <path d="M32 40 C22 36 16 28 16 18 C24 22 30 28 32 36Z" fill="#6CC367"/>
+    <path d="M32 28 C40 24 46 16 46 8 C40 12 34 18 32 24Z" fill="#7ACB6E"/>
+    <circle cx="20" cy="35" r="6" fill="#A8DA74"/><circle cx="44" cy="23" r="5.5" fill="#A8DA74"/><circle cx="44" cy="51" r="6.5" fill="#97CF66"/>
+    <g fill="#FFD84D"><circle cx="21" cy="59" r="3.5"/><circle cx="37" cy="13" r="3"/></g>
+  </symbol>
+  <symbol id="cabbageYoung" viewBox="0 0 60 50">
+    <ellipse cx="30" cy="35" rx="22" ry="12" fill="#7FCB6E"/>
+    <path d="M8 35 C10 23 20 17 28 21 C22 25 20 31 22 41Z" fill="#9AD884"/>
+    <path d="M52 35 C50 23 40 17 32 21 C38 25 40 31 38 41Z" fill="#9AD884"/>
+    <circle cx="30" cy="32" r="7" fill="#C8EFA9"/>
+  </symbol>
+  <symbol id="pumpkinYoung" viewBox="0 0 64 50">
+    <path d="M32 26 C32 18 36 13 41 12" stroke="#5B8A3A" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M12 34 C8 24 16 16 24 20 C28 22 28 30 22 34Z" fill="#6CC367"/>
+    <path d="M52 32 C56 22 48 16 42 20 C38 22 38 30 44 34Z" fill="#5DB85B"/>
+    <ellipse cx="32" cy="39" rx="11" ry="9.5" fill="#A8D46E"/>
+    <path d="M27 31 C25 36 25 42 27 47 M37 31 C39 36 39 42 37 47" stroke="#86B852" stroke-width="1.5" fill="none"/>
+  </symbol>
+  <symbol id="carrotUp" viewBox="0 0 44 72">
+    <path d="M22 28 C16 16 8 14 5 3 C13 5 19 13 22 24Z" fill="#4FAE59"/>
+    <path d="M22 28 C28 16 36 14 39 2 C31 5 25 13 22 24Z" fill="#5DBB63"/>
+    <path d="M22 28 C19 16 21 8 22 1 C25 8 25 16 22 28Z" fill="#7ACB6E"/>
+    <path d="M9 30 Q22 21 35 30 L25 70 Q22 73 19 70Z" fill="#FF8A3D"/>
+    <path d="M14 38h7M20 48h7M17 58h5" stroke="#E2701F" stroke-width="2" stroke-linecap="round"/>
+    <ellipse cx="16" cy="40" rx="2.5" ry="6" fill="#fff" opacity=".3"/>
+  </symbol>
+  <symbol id="tapArrow" viewBox="0 0 30 30">
+    <circle cx="15" cy="15" r="14" fill="#FF9C55" stroke="#fff" stroke-width="2.5"/>
+    <path d="M15 8v12M9.5 15l5.5 5.5 5.5-5.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+  </symbol>
+
+  <symbol id="cloud" viewBox="0 0 80 34">
+    <path d="M14 32 C4 32 2 20 12 18 C12 8 26 4 32 12 C36 2 54 2 56 14 C66 12 74 18 72 26 C72 30 68 32 64 32Z" fill="#fff"/>
+  </symbol>
+
+  <!-- full scene: background + bed + can + drops + coins (parts reused by the clickable prototype) -->
+  <symbol id="sceneBg" viewBox="0 0 350 238">
+    <rect width="350" height="238" fill="url(#gSky)"/>
+    <circle cx="298" cy="42" r="46" fill="url(#gSun)" opacity=".75"/>
+    <circle cx="298" cy="42" r="21" fill="#FFCF6E"/>
+    <circle cx="292" cy="36" r="8" fill="#FFE3A6" opacity=".8"/>
+    <use href="#cloud" x="150" y="22" width="70" height="30" opacity=".95"/>
+    <use href="#cloud" x="232" y="96" width="44" height="18" opacity=".8"/>
+    <path d="M0 150 C60 112 120 120 180 140 C240 116 300 110 350 132 L350 238 L0 238Z" fill="url(#gHill1)"/>
+    <path d="M0 176 C70 150 150 156 220 170 C270 158 320 156 350 166 L350 238 L0 238Z" fill="url(#gHill2)"/>
+    <g fill="#F3F8FF" opacity=".9"><circle cx="40" cy="190" r="2.2"/><circle cx="318" cy="186" r="2.2"/><circle cx="300" cy="196" r="1.8"/><circle cx="60" cy="198" r="1.6"/></g>
+  </symbol>
+  <symbol id="sceneDrops" viewBox="0 0 350 238">
+    <use href="#drop" x="128" y="70" width="13" height="13"/>
+    <use href="#drop" x="142" y="88" width="11" height="11"/>
+    <use href="#drop" x="122" y="96" width="10" height="10"/>
+    <use href="#drop" x="138" y="112" width="12" height="12"/>
+    <use href="#drop" x="114" y="80" width="9" height="9"/>
+  </symbol>
+  <symbol id="scene" viewBox="0 0 350 238" preserveAspectRatio="xMidYMid slice">
+    <use href="#sceneBg" width="350" height="238"/>
+    <use href="#bed" x="22" y="84" width="306" height="153"/>
+    <g transform="translate(18 18) rotate(18 60 48)"><use href="#can" width="118" height="87"/></g>
+    <use href="#sceneDrops" width="350" height="238"/>
+    <use href="#coin" x="226" y="98" width="26" height="26"/>
+    <use href="#coin" x="250" y="82" width="20" height="20"/>
+  </symbol>
+
+  <!-- basket logo -->
+  <symbol id="basket" viewBox="0 0 32 32">
+    <path d="M9.5 13 L13.5 5.5 M22.5 13 L18.5 5.5" stroke="#fff" stroke-width="2.6" stroke-linecap="round"/>
+    <path d="M4 12.5 h24 a1.5 1.5 0 0 1 1.45 1.9 l-3.2 11.2 a3 3 0 0 1-2.9 2.2 H8.65 a3 3 0 0 1-2.9-2.2 L2.55 14.4 A1.5 1.5 0 0 1 4 12.5z" fill="#fff"/>
+    <path d="M11 17.5v5.5 M16 17.5v5.5 M21 17.5v5.5" stroke="#1E6BD6" stroke-width="2.4" stroke-linecap="round"/>
+    <circle cx="25.5" cy="7.5" r="3.6" fill="#FFB37A"/>
+  </symbol>
+
+  <!-- categories -->
+  <symbol id="c-veg" viewBox="0 0 80 70">
+    <path d="M56 24 C64 12 74 14 76 8 C70 4 60 8 56 18Z" fill="#5DBB63"/>
+    <path d="M44 66 L66 26 Q70 20 64 18 Q58 16 54 22 Z" fill="#FF8A3D"/>
+    <path d="M52 40 h6 M48 50 h6 M57 30 h5" stroke="#E2701F" stroke-width="2" stroke-linecap="round"/>
+    <path d="M30 26 C24 20 10 22 8 36 C6 52 18 66 30 62 C42 66 54 52 50 36 C48 22 36 20 30 26Z" fill="#F25C45"/>
+    <path d="M30 26 C30 20 32 14 36 12" stroke="#7A4A2A" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M34 16 C38 8 48 10 48 14 C42 18 38 18 34 16Z" fill="#5DBB63"/>
+    <ellipse cx="18" cy="38" rx="4" ry="7" fill="#fff" opacity=".35"/>
+  </symbol>
+  <symbol id="c-milk" viewBox="0 0 80 70">
+    <path d="M22 18 L34 6 H54 L62 18Z" fill="#E6EEF2"/>
+    <rect x="34" y="1" width="20" height="7" rx="2" fill="#2E9FD0"/>
+    <rect x="22" y="18" width="40" height="50" rx="5" fill="#fff"/>
+    <path d="M22 18 L34 6 V68 H27 a5 5 0 0 1-5-5Z" fill="#E6EEF2"/>
+    <rect x="38" y="30" width="20" height="24" rx="4" fill="#2E9FD0"/>
+    <path d="M42 46 c4-6 8-6 12 0" stroke="#fff" stroke-width="2.4" fill="none" stroke-linecap="round"/>
+    <rect x="62" y="40" width="16" height="28" rx="4" fill="#fff" stroke="#CFE3EC" stroke-width="2"/>
+    <rect x="64" y="48" width="12" height="18" rx="2.5" fill="#EAF4F8"/>
+  </symbol>
+  <symbol id="c-bread" viewBox="0 0 80 70">
+    <path d="M8 46 C8 26 30 18 46 22 C66 26 76 38 72 52 C70 60 62 64 50 64 H22 C12 64 8 56 8 46Z" fill="#E7A35F"/>
+    <path d="M8 46 C8 30 28 22 44 24 C62 28 70 40 68 50 C56 54 22 56 8 46Z" fill="#F0B978"/>
+    <path d="M24 32 l8 10 M38 28 l8 12 M52 30 l7 11" stroke="#C47F3C" stroke-width="3.2" stroke-linecap="round"/>
+    <ellipse cx="22" cy="40" rx="6" ry="3" fill="#fff" opacity=".3"/>
+  </symbol>
+  <symbol id="c-groc" viewBox="0 0 80 70">
+    <path d="M14 26 C14 18 20 14 24 14 H46 C50 14 56 18 56 26 L58 62 C58 66 54 68 50 68 H20 C16 68 12 66 12 62Z" fill="#EBCB92"/>
+    <path d="M18 14 C22 8 28 6 35 6 C42 6 48 8 52 14Z" fill="#E0B978"/>
+    <path d="M22 14 Q35 22 48 14" stroke="#C99A55" stroke-width="2.4" fill="none"/>
+    <rect x="20" y="34" width="30" height="20" rx="4" fill="#fff" opacity=".85"/>
+    <path d="M27 44 h16" stroke="#C99A55" stroke-width="2.4" stroke-linecap="round"/>
+    <g fill="#F2D49B"><ellipse cx="64" cy="62" rx="4" ry="2.6"/><ellipse cx="72" cy="58" rx="4" ry="2.6"/><ellipse cx="68" cy="66" rx="4" ry="2.6"/><ellipse cx="76" cy="65" rx="3.4" ry="2.4"/></g>
+  </symbol>
+
+  <!-- products -->
+  <symbol id="p-apple" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="34" ry="4" fill="#000" opacity=".08"/>
+    <path d="M58 24 C52 18 38 20 36 36 C34 52 46 66 58 62 C70 66 82 52 80 36 C78 20 64 18 58 24Z" fill="#9AD15E"/>
+    <ellipse cx="46" cy="36" rx="3.5" ry="7" fill="#fff" opacity=".35"/>
+    <path d="M58 24 C58 18 60 14 63 12" stroke="#7A4A2A" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M32 26 C26 20 12 22 10 38 C8 54 20 68 32 64 C44 68 56 54 54 38 C52 22 38 20 32 26Z" fill="#F25C45"/>
+    <path d="M32 26 C32 20 34 15 38 13" stroke="#7A4A2A" stroke-width="3" stroke-linecap="round" fill="none"/>
+    <path d="M36 16 C40 8 50 10 50 14 C44 18 40 18 36 16Z" fill="#5DBB63"/>
+    <ellipse cx="21" cy="40" rx="4" ry="8" fill="#fff" opacity=".35"/>
+  </symbol>
+  <symbol id="p-bread" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="38" ry="4" fill="#000" opacity=".08"/>
+    <path d="M8 46 C8 24 30 16 46 18 C70 20 84 34 82 48 C80 58 72 62 60 62 H22 C12 62 8 56 8 46Z" fill="#DE9550"/>
+    <path d="M10 44 C10 28 30 20 46 22 C66 24 78 36 76 46 C60 52 26 54 10 44Z" fill="#F0B978"/>
+    <path d="M22 30 l7 11 M36 25 l8 13 M51 26 l8 13 M65 31 l6 10" stroke="#C47F3C" stroke-width="3.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="p-cheese" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="36" ry="4" fill="#000" opacity=".08"/>
+    <path d="M10 34 L62 14 L82 32 V58 C82 60 80 62 78 62 H14 C12 62 10 60 10 58Z" fill="#FFC93C"/>
+    <path d="M10 34 L62 14 L82 32Z" fill="#FFE07A"/>
+    <path d="M10 34 H82" stroke="#F2B21E" stroke-width="2"/>
+    <g fill="#F2B21E"><circle cx="28" cy="46" r="5"/><circle cx="52" cy="52" r="4"/><circle cx="68" cy="44" r="3.5"/><circle cx="40" cy="57" r="2.5"/><circle cx="58" cy="26" r="3" fill="#F5C842"/></g>
+  </symbol>
+
+  <!-- small UI icons -->
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" fill="none" stroke="#2B2B2B" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#2B2B2B" stroke-width="2.2"/><path d="M12 11v6" stroke="#2B2B2B" stroke-width="2.4" stroke-linecap="round"/><circle cx="12" cy="7.6" r="1.5" fill="#2B2B2B"/></symbol>
+  <symbol id="i-bell" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0112 0v5.5l1.5 2H4.5z" fill="none" stroke="#2B2B2B" stroke-width="2.1" stroke-linejoin="round"/><path d="M10 20.5a2 2 0 004 0" stroke="#2B2B2B" stroke-width="2.1" stroke-linecap="round" fill="none"/><circle cx="17.5" cy="5.5" r="3.4" fill="#FFB37A" stroke="#fff" stroke-width="1.6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="6.5" fill="none" stroke="#98A2B3" stroke-width="2.4"/><path d="M16 16l4 4" stroke="#98A2B3" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12" stroke="#fff" stroke-width="2.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.5v13l10.5-6.5z" fill="#2B2B2B"/></symbol>
+  <symbol id="i-gift" viewBox="0 0 24 24"><rect x="3.5" y="9" width="17" height="4.5" rx="1.4" fill="#FF9C55"/><rect x="5" y="13.5" width="14" height="7.5" rx="1.6" fill="#FFB37A"/><rect x="10.6" y="9" width="2.8" height="12" fill="#1E6BD6"/><path d="M12 9C9 3.5 5 5.5 7.5 8.5M12 9c3-5.5 7-3.5 4.5-.5" stroke="#1E6BD6" stroke-width="2" fill="none" stroke-linecap="round"/></symbol>
+  <symbol id="i-can" viewBox="0 0 24 24"><path d="M6.5 8.5C3 8.5 3 15 6.5 15.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><rect x="6.5" y="7.5" width="10" height="11" rx="3" fill="currentColor"/><path d="M16 13l5-5" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/><path d="M9 7.5c1-2.4 4-2.4 5 0" fill="none" stroke="currentColor" stroke-width="1.8"/></symbol>
+  <symbol id="i-basketline" viewBox="0 0 24 24"><path d="M3 9.5h18l-2 9.2a2 2 0 01-2 1.6H7a2 2 0 01-2-1.6z" fill="none" stroke="#1E6BD6" stroke-width="2.2" stroke-linejoin="round"/><path d="M8 9.5l3-5M16 9.5l-3-5" stroke="#1E6BD6" stroke-width="2.2" stroke-linecap="round"/><path d="M9.5 13.5v3M14.5 13.5v3" stroke="#1E6BD6" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="8.5" fill="none" stroke="#1E6BD6" stroke-width="2.3"/><path d="M12 8v5l3 2" fill="none" stroke="#1E6BD6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-trophy" viewBox="0 0 24 24"><path d="M7 4h10v5a5 5 0 01-10 0z" fill="none" stroke="#1E6BD6" stroke-width="2.2" stroke-linejoin="round"/><path d="M7 6H4.5a2.5 2.5 0 002.8 4M17 6h2.5a2.5 2.5 0 01-2.8 4M12 14v3.5M8.5 20.5h7" fill="none" stroke="#1E6BD6" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-water" viewBox="0 0 24 24"><path d="M5.5 9C2.5 9 2.5 14.5 5.5 15" fill="none" stroke="#1E6BD6" stroke-width="2" stroke-linecap="round"/><rect x="5.5" y="8" width="9.5" height="10.5" rx="2.8" fill="none" stroke="#1E6BD6" stroke-width="2.2"/><path d="M15 12.5l5-5" stroke="#1E6BD6" stroke-width="2.2" stroke-linecap="round"/><path d="M20.5 12v.1M19 15.5v.1" stroke="#1E6BD6" stroke-width="2.4" stroke-linecap="round"/></symbol>
+  <symbol id="i-harvest" viewBox="0 0 24 24"><path d="M12 21L17.5 9.5Q18.5 7 16 6.5 13.5 6 12.5 8.5Z" fill="none" stroke="#1E6BD6" stroke-width="2.2" stroke-linejoin="round"/><path d="M16.5 6.5C17 4 19 3 21 3.5" stroke="#1E6BD6" stroke-width="2.2" stroke-linecap="round" fill="none"/><path d="M6.5 10.5h3" stroke="#1E6BD6" stroke-width="2.2" stroke-linecap="round"/><path d="M3.5 14.5h4" stroke="#1E6BD6" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="t-home" viewBox="0 0 26 26"><path d="M4 11.5L13 4l9 7.5V21a1.5 1.5 0 01-1.5 1.5H16v-6h-6v6H5.5A1.5 1.5 0 014 21z" fill="currentColor"/></symbol>
+  <symbol id="t-cat" viewBox="0 0 26 26"><g fill="none" stroke="currentColor" stroke-width="2.2"><rect x="4" y="4" width="7.5" height="7.5" rx="2.2"/><rect x="14.5" y="4" width="7.5" height="7.5" rx="2.2"/><rect x="4" y="14.5" width="7.5" height="7.5" rx="2.2"/><rect x="14.5" y="14.5" width="7.5" height="7.5" rx="2.2"/></g></symbol>
+  <symbol id="t-cart" viewBox="0 0 26 26"><g fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4.5h3l2.4 12h11.2l2-8.5H7.2"/></g><circle cx="10" cy="21" r="1.8" fill="currentColor"/><circle cx="18" cy="21" r="1.8" fill="currentColor"/></symbol>
+  <symbol id="t-user" viewBox="0 0 26 26"><g fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="13" cy="9" r="4.5"/><path d="M4.5 22c.8-4.5 4.2-7 8.5-7s7.7 2.5 8.5 7" stroke-linecap="round"/></g></symbol>
+</defs>
+</svg>
+
+<!-- ======== extra sprite: catalog categories and products (prototype only) ======== -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+<defs>
+  <!-- categories, 80x70 -->
+  <symbol id="c-meat" viewBox="0 0 80 70">
+    <path d="M10 40 C6 24 22 10 40 14 C56 17 66 30 60 46 C54 60 34 64 22 58 C14 54 12 48 10 40Z" fill="#E8604C"/>
+    <path d="M16 40 C14 28 26 18 40 21 C52 24 58 33 54 44 C50 54 36 57 26 53 C20 50 17 46 16 40Z" fill="#F58A72"/>
+    <path d="M24 34 C30 30 40 30 46 36" stroke="#FFD9CF" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <path d="M50 58 C56 50 66 48 74 54 C68 62 58 64 50 58Z M50 58 l-6 -5 v10z" fill="#FF8A5C"/>
+    <circle cx="68" cy="54" r="1.6" fill="#fff"/>
+  </symbol>
+  <symbol id="c-drinks" viewBox="0 0 80 70">
+    <rect x="30" y="2" width="12" height="8" rx="2" fill="#1E6BD6"/>
+    <path d="M29 10h14v6c6 3 9 8 9 14v32c0 3-2 6-6 6H26c-4 0-6-3-6-6V30c0-6 3-11 9-14z" fill="#9AD0F5"/>
+    <rect x="24" y="34" width="24" height="16" rx="3" fill="#fff"/>
+    <rect x="22" y="22" width="4" height="40" rx="2" fill="#fff" opacity=".4"/>
+    <path d="M54 40h20l-3 26H57z" fill="#FFB37A"/><path d="M55 46h18" stroke="#fff" stroke-width="2" opacity=".7"/>
+  </symbol>
+  <symbol id="c-chem" viewBox="0 0 80 70">
+    <path d="M18 4h14l7 6h-5v6H20z" fill="#1E6BD6"/>
+    <path d="M22 16h10v6c5 3 8 7 8 13v27c0 3-2 6-6 6H20c-4 0-6-3-6-6V35c0-6 3-10 8-13z" fill="#7CC4F0"/>
+    <rect x="18" y="38" width="18" height="14" rx="3" fill="#fff"/>
+    <rect x="52" y="20" width="10" height="7" rx="2" fill="#4FAE59"/>
+    <path d="M50 27h14v4c4 2 6 5 6 9v24c0 2-2 4-4 4H48c-2 0-4-2-4-4V40c0-4 2-7 6-9z" fill="#A6DE8F"/>
+    <rect x="49" y="44" width="16" height="12" rx="3" fill="#fff"/>
+  </symbol>
+  <symbol id="c-care" viewBox="0 0 80 70">
+    <rect x="6" y="40" width="42" height="24" rx="10" fill="#FFC9A3"/><rect x="10" y="44" width="34" height="10" rx="5" fill="#FFE3CC"/>
+    <circle cx="16" cy="33" r="5" fill="#fff" stroke="#B8D9F7" stroke-width="2"/><circle cx="27" cy="28" r="3.5" fill="#fff" stroke="#B8D9F7" stroke-width="2"/><circle cx="34" cy="35" r="2.5" fill="#fff" stroke="#B8D9F7" stroke-width="2"/>
+    <g transform="rotate(-35 62 36)"><rect x="58" y="16" width="8" height="52" rx="4" fill="#2A8BE8"/><rect x="56" y="4" width="12" height="15" rx="3" fill="#fff" stroke="#A9D3F7" stroke-width="2"/></g>
+  </symbol>
+  <symbol id="c-cosm" viewBox="0 0 80 70">
+    <rect x="6" y="34" width="42" height="12" rx="4" fill="#E86A8E"/>
+    <path d="M8 46h38v12q0 8-8 8H16q-8 0-8-8z" fill="#fff" stroke="#F3C6D3" stroke-width="2"/>
+    <rect x="16" y="52" width="22" height="7" rx="3" fill="#F7B5C8"/>
+    <rect x="56" y="36" width="14" height="30" rx="3" fill="#B98250"/>
+    <rect x="58" y="24" width="10" height="14" rx="2" fill="#D94A6E"/><path d="M58 24 L68 15 V24Z" fill="#D94A6E"/>
+  </symbol>
+  <symbol id="c-pet" viewBox="0 0 80 70">
+    <path d="M6 44h54l-6 18q-1 4-5 4H17q-4 0-5-4z" fill="#8E63D9"/><ellipse cx="33" cy="44" rx="27" ry="6" fill="#B08BEA"/>
+    <g fill="#C47F3C"><circle cx="22" cy="41" r="4"/><circle cx="30" cy="39" r="4"/><circle cx="38" cy="41" r="4"/><circle cx="26" cy="43" r="3"/><circle cx="44" cy="43" r="3"/></g>
+    <g fill="#8E63D9" opacity=".5"><ellipse cx="64" cy="22" rx="7" ry="6"/><circle cx="56" cy="13" r="3"/><circle cx="62" cy="9" r="3"/><circle cx="68" cy="9" r="3"/><circle cx="73" cy="14" r="3"/></g>
+  </symbol>
+
+  <!-- products, 90x70; many take their main colour from `color` and a detail from --g -->
+  <symbol id="p-tomato" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="34" ry="4" fill="#000" opacity=".08"/>
+    <circle cx="58" cy="40" r="19" fill="url(#gTom)"/><circle cx="33" cy="42" r="21" fill="url(#gTom)"/>
+    <path d="M33 21 l4 5 6-1-4 4.6-6-1.2-6 1.2-4-4.6 6 1z" fill="#3D9A4B"/><path d="M58 21 l3.5 4.5 5.5-1-3.5 4-5.5-1-5.5 1-3.5-4 5.5 1z" fill="#3D9A4B"/>
+    <ellipse cx="25" cy="37" rx="4" ry="6" fill="#fff" opacity=".35"/>
+  </symbol>
+  <symbol id="p-banana" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="34" ry="4" fill="#000" opacity=".08"/>
+    <path d="M12 26 C18 52 52 62 80 44 C70 50 40 50 24 28Z" fill="#EDBE35"/>
+    <path d="M14 18 C22 44 56 52 82 34 C72 42 42 42 26 18Z" fill="#FFD95E"/>
+    <path d="M16 10 C26 36 58 42 82 22 C72 32 44 32 28 10Z" fill="#FFE27A"/>
+    <path d="M10 8 l9 -4 5 8z" fill="#7A5A22"/>
+  </symbol>
+  <symbol id="p-carrots" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="32" ry="4" fill="#000" opacity=".08"/>
+    <g transform="rotate(-18 36 40)"><path d="M28 18 Q36 13 44 18 L38 66 Q36 68 34 66Z" fill="#FF8A3D"/><path d="M31 30h6M33 42h6M33 53h4" stroke="#E2701F" stroke-width="2" stroke-linecap="round"/><path d="M36 18 C33 10 28 7 24 3 M36 18 C38 9 42 5 46 3 M36 18 V1" stroke="#5DBB63" stroke-width="4" stroke-linecap="round" fill="none"/></g>
+    <g transform="rotate(16 56 40)"><path d="M48 18 Q56 13 64 18 L58 66 Q56 68 54 66Z" fill="#FF9A52"/><path d="M51 30h6M53 42h6M53 53h4" stroke="#E2701F" stroke-width="2" stroke-linecap="round"/><path d="M56 18 C53 10 48 7 44 3 M56 18 C58 9 62 5 66 3 M56 18 V1" stroke="#4FAE59" stroke-width="4" stroke-linecap="round" fill="none"/></g>
+  </symbol>
+  <symbol id="p-carton" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="66" rx="24" ry="3.5" fill="#000" opacity=".08"/>
+    <path d="M30 16 L38 6 H52 L60 16Z" fill="#E6EEF2"/>
+    <rect x="40" y="1" width="10" height="7" rx="2" fill="currentColor"/>
+    <rect x="30" y="16" width="30" height="50" rx="4" fill="#fff"/>
+    <path d="M30 16 L38 6 V66 H34 a4 4 0 0 1-4-4Z" fill="#E6EEF2"/>
+    <rect x="40" y="27" width="17" height="24" rx="3" fill="currentColor"/>
+    <path d="M43 42 c3-5 8-5 11 0" stroke="#fff" stroke-width="2.2" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="p-tub" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="65" rx="28" ry="3.5" fill="#000" opacity=".08"/>
+    <path d="M22 26 H68 L63 62 Q62 64 60 64 H30 Q28 64 27 62Z" fill="#fff" stroke="#E2EAF5" stroke-width="2"/>
+    <rect x="19" y="18" width="52" height="10" rx="5" fill="currentColor"/>
+    <rect x="31" y="35" width="28" height="17" rx="4" fill="currentColor" opacity=".85"/>
+    <path d="M37 44 h16" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="p-butter" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="62" rx="34" ry="4" fill="#000" opacity=".08"/>
+    <path d="M12 34 L26 22 H78 V52 Q78 58 72 58 H64 L64 34Z" fill="#F5D66E"/>
+    <path d="M12 34 L26 22 H78 L64 34Z" fill="#FFE9A8"/>
+    <rect x="12" y="34" width="52" height="24" rx="3" fill="#2E9FD0"/>
+    <path d="M22 46 h30" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="p-baguette" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="60" rx="38" ry="4" fill="#000" opacity=".08"/>
+    <g transform="rotate(-18 45 38)"><rect x="4" y="28" width="82" height="20" rx="10" fill="#E3A25F"/><rect x="6" y="29" width="78" height="12" rx="6" fill="#F0B978"/>
+    <path d="M18 31 l6 8 M32 31 l6 8 M46 31 l6 8 M60 31 l6 8" stroke="#C47F3C" stroke-width="3" stroke-linecap="round"/></g>
+  </symbol>
+  <symbol id="p-pack" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="66" rx="26" ry="3.5" fill="#000" opacity=".08"/>
+    <path d="M27 9 H63 L66 62 Q66 66 62 66 H28 Q24 66 24 62Z" fill="currentColor"/>
+    <path d="M27 9 H63 L61 3 H29Z" fill="currentColor" opacity=".7"/>
+    <rect x="31" y="20" width="28" height="26" rx="13" fill="#fff" opacity=".92"/>
+    <g style="fill:var(--g,#E8C892)"><ellipse cx="39" cy="30" rx="3" ry="2"/><ellipse cx="46" cy="27" rx="3" ry="2"/><ellipse cx="52" cy="32" rx="3" ry="2"/><ellipse cx="42" cy="37" rx="3" ry="2"/><ellipse cx="50" cy="39" rx="3" ry="2"/></g>
+    <rect x="30" y="52" width="30" height="6" rx="3" fill="#fff" opacity=".7"/>
+  </symbol>
+  <symbol id="p-box" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="66" rx="30" ry="3.5" fill="#000" opacity=".08"/>
+    <path d="M18 18 L28 8 H74 V56 L64 66 H18Z" fill="currentColor" opacity=".72"/>
+    <rect x="18" y="18" width="46" height="48" rx="3" fill="currentColor"/>
+    <path d="M18 18 L28 8 H74 L64 18Z" fill="#fff" opacity=".3"/>
+    <rect x="24" y="30" width="34" height="20" rx="4" fill="#fff" opacity=".92"/>
+    <circle cx="41" cy="40" r="6" style="fill:var(--g,#FFB37A)"/>
+  </symbol>
+  <symbol id="p-bottle" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="66" rx="20" ry="3" fill="#000" opacity=".08"/>
+    <rect x="39" y="1" width="12" height="9" rx="2.5" fill="#2B2B2B" opacity=".7"/>
+    <path d="M38 10h14v6c6 3 10 8 10 15v29c0 3-2 6-6 6H34c-4 0-6-3-6-6V31c0-7 4-12 10-15z" fill="currentColor"/>
+    <rect x="33" y="34" width="24" height="18" rx="4" fill="#fff" opacity=".92"/>
+    <rect x="31" y="22" width="4" height="36" rx="2" fill="#fff" opacity=".3"/>
+  </symbol>
+  <symbol id="p-spray" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="66" rx="20" ry="3" fill="#000" opacity=".08"/>
+    <path d="M34 3h17l9 6h-7v7H36z" fill="#2B2B2B" opacity=".7"/>
+    <path d="M38 16h12v6c6 3 9 8 9 14v24c0 3-2 6-6 6H35c-4 0-6-3-6-6V36c0-6 3-11 9-14z" fill="currentColor"/>
+    <rect x="34" y="38" width="20" height="16" rx="3" fill="#fff" opacity=".92"/>
+  </symbol>
+  <symbol id="p-pump" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="66" rx="20" ry="3" fill="#000" opacity=".08"/>
+    <path d="M40 2h16v4H46v6h-6z" fill="#2B2B2B" opacity=".7"/><rect x="39" y="10" width="12" height="8" rx="2" fill="#2B2B2B" opacity=".7"/>
+    <path d="M32 18h26q4 0 4 4v40q0 4-4 4H32q-4 0-4-4V22q0-4 4-4z" fill="currentColor"/>
+    <rect x="34" y="34" width="22" height="16" rx="3" fill="#fff" opacity=".92"/>
+  </symbol>
+  <symbol id="p-tube" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="34" ry="3.5" fill="#000" opacity=".08"/>
+    <g transform="rotate(-14 45 38)"><path d="M12 26 H62 L70 30 V46 L62 50 H12 Q8 50 8 46 V30 Q8 26 12 26Z" fill="currentColor"/>
+    <rect x="70" y="31" width="13" height="14" rx="3" fill="#fff" stroke="#D6DCE7" stroke-width="2"/>
+    <path d="M11 27 v22" stroke="#fff" stroke-width="3" opacity=".5"/>
+    <rect x="22" y="32" width="30" height="12" rx="3" fill="#fff" opacity=".92"/></g>
+  </symbol>
+  <symbol id="p-jar" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="65" rx="26" ry="3.5" fill="#000" opacity=".08"/>
+    <rect x="21" y="16" width="48" height="15" rx="5" fill="currentColor"/>
+    <path d="M23 31 h44 v24 q0 9 -9 9 H32 q-9 0 -9 -9z" fill="#fff" stroke="#E2EAF5" stroke-width="2"/>
+    <rect x="32" y="40" width="26" height="12" rx="3" fill="currentColor" opacity=".7"/>
+  </symbol>
+  <symbol id="p-balm" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="22" ry="3" fill="#000" opacity=".08"/>
+    <g transform="rotate(-20 45 36)"><rect x="37" y="28" width="18" height="34" rx="4" fill="currentColor"/><rect x="39" y="12" width="14" height="18" rx="6" fill="#F7D1A8"/><rect x="37" y="40" width="18" height="10" fill="#fff" opacity=".85"/></g>
+  </symbol>
+  <symbol id="p-roll" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="66" rx="34" ry="3.5" fill="#000" opacity=".08"/>
+    <rect x="12" y="20" width="32" height="44" rx="6" fill="#fff" stroke="#DCE3EE" stroke-width="2"/><ellipse cx="28" cy="20" rx="16" ry="5" fill="#F4F7FB" stroke="#DCE3EE" stroke-width="2"/><ellipse cx="28" cy="20" rx="5" ry="2" fill="#C2CBD8"/>
+    <rect x="46" y="20" width="32" height="44" rx="6" fill="#fff" stroke="#DCE3EE" stroke-width="2"/><ellipse cx="62" cy="20" rx="16" ry="5" fill="#F4F7FB" stroke="#DCE3EE" stroke-width="2"/><ellipse cx="62" cy="20" rx="5" ry="2" fill="#C2CBD8"/>
+    <rect x="10" y="38" width="70" height="12" rx="3" fill="currentColor" opacity=".85"/>
+  </symbol>
+  <symbol id="p-chicken" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="36" ry="4" fill="#000" opacity=".08"/>
+    <rect x="10" y="30" width="70" height="30" rx="8" fill="#D7E6F5"/><rect x="14" y="26" width="62" height="28" rx="7" fill="#EEF5FC"/>
+    <path d="M20 44 C20 34 36 30 44 36 C50 40 46 48 36 48 C28 48 20 50 20 44Z" fill="#F7C7B8"/>
+    <path d="M46 42 C46 32 62 30 68 36 C72 42 66 48 58 48 C52 48 46 48 46 42Z" fill="#F4B9A7"/>
+  </symbol>
+  <symbol id="p-mince" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="64" rx="36" ry="4" fill="#000" opacity=".08"/>
+    <rect x="10" y="30" width="70" height="30" rx="8" fill="#D7E6F5"/><rect x="14" y="26" width="62" height="28" rx="7" fill="#EEF5FC"/>
+    <path d="M20 40 C22 30 68 28 70 40 C70 50 22 52 20 40Z" fill="#D9584A"/>
+    <g fill="#F08A7A"><circle cx="30" cy="38" r="2"/><circle cx="40" cy="42" r="2"/><circle cx="52" cy="37" r="2"/><circle cx="60" cy="43" r="2"/><circle cx="46" cy="46" r="1.6"/></g>
+  </symbol>
+  <symbol id="p-fish" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="62" rx="36" ry="4" fill="#000" opacity=".08"/>
+    <path d="M8 40 C14 24 56 20 82 30 L78 46 C56 54 16 54 8 40Z" fill="#FF8A5C"/>
+    <path d="M24 30 C28 38 28 44 24 50 M38 27 C42 36 42 44 38 52 M52 26 C56 34 56 44 52 51 M66 28 C69 34 69 42 66 48" stroke="#FFC4A6" stroke-width="3" fill="none" stroke-linecap="round"/>
+  </symbol>
+  <symbol id="p-sausage" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="62" rx="36" ry="4" fill="#000" opacity=".08"/>
+    <g fill="#F2A08C"><rect x="8" y="22" width="74" height="13" rx="6.5"/><rect x="8" y="38" width="74" height="13" rx="6.5"/></g>
+    <g fill="#fff" opacity=".35"><rect x="14" y="24" width="40" height="3" rx="1.5"/><rect x="14" y="40" width="40" height="3" rx="1.5"/></g>
+    <rect x="28" y="18" width="34" height="37" rx="4" fill="#1E6BD6" opacity=".9"/><rect x="33" y="30" width="24" height="12" rx="3" fill="#fff"/>
+  </symbol>
+  <symbol id="p-pouch" viewBox="0 0 90 70">
+    <ellipse cx="45" cy="66" rx="22" ry="3" fill="#000" opacity=".08"/>
+    <path d="M28 5h34l-2 6 4 51q0 4-4 4H30q-4 0-4-4l4-51z" fill="currentColor"/>
+    <path d="M28 5h34l-2 6H30z" fill="#fff" opacity=".35"/>
+    <path d="M33 38 C39 30 49 30 55 38 C49 46 39 46 33 38Z M55 38 l6-5 v10z" fill="#fff" opacity=".92"/>
+  </symbol>
+
+  <!-- small UI icons -->
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-clock2" viewBox="0 0 24 24"><circle cx="12" cy="12.5" r="8.5" fill="none" stroke="#1E6BD6" stroke-width="2.3"/><path d="M12 8v5l3 2" fill="none" stroke="#1E6BD6" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-plusd" viewBox="0 0 24 24"><path d="M12 6v12M6 12h12" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" fill="none" stroke="#98A2B3" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+  <symbol id="i-box" viewBox="0 0 24 24"><path d="M4 8l8-4 8 4v8l-8 4-8-4z M4 8l8 4 8-4 M12 12v8" fill="none" stroke="#1E6BD6" stroke-width="2" stroke-linejoin="round"/></symbol>
+  <symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0119 9.5C19 14.8 12 21 12 21z" fill="none" stroke="#1E6BD6" stroke-width="2.2"/><circle cx="12" cy="9.5" r="2.6" fill="#1E6BD6"/></symbol>
+  <symbol id="i-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9" fill="none" stroke="#1E6BD6" stroke-width="2.2"/><path d="M9.6 9.5a2.5 2.5 0 114 2c-.9.6-1.6 1.1-1.6 2.3" fill="none" stroke="#1E6BD6" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17.2" r="1.4" fill="#1E6BD6"/></symbol>
+  <symbol id="i-bellb" viewBox="0 0 24 24"><path d="M6 16.5V11a6 6 0 0112 0v5.5l1.5 2H4.5z" fill="none" stroke="#1E6BD6" stroke-width="2.1" stroke-linejoin="round"/><path d="M10 20.5a2 2 0 004 0" stroke="#1E6BD6" stroke-width="2.1" stroke-linecap="round" fill="none"/></symbol>
+  <symbol id="i-sprout" viewBox="0 0 24 24"><path d="M12 21v-8" stroke="#4FAE59" stroke-width="2.4" stroke-linecap="round"/><path d="M12 14C7 14 4 10.5 4 6c5 0 8 3 8 8z" fill="#7ACB6E"/><path d="M12 12c0-4.5 3-7.5 8-7.5 0 4.5-3 7.5-8 7.5z" fill="#4FAE59"/></symbol>
+  <symbol id="i-user" viewBox="0 0 26 26"><g fill="none" stroke="#fff" stroke-width="2.4"><circle cx="13" cy="9" r="4.5"/><path d="M4.5 22c.8-4.5 4.2-7 8.5-7s7.7 2.5 8.5 7" stroke-linecap="round"/></g></symbol>
+  <symbol id="barcode" viewBox="0 0 64 26"><g fill="#1C2433"><rect x="0" y="0" width="2" height="26"/><rect x="4" y="0" width="1" height="26"/><rect x="7" y="0" width="3" height="26"/><rect x="12" y="0" width="1" height="26"/><rect x="15" y="0" width="2" height="26"/><rect x="19" y="0" width="1" height="26"/><rect x="22" y="0" width="3" height="26"/><rect x="27" y="0" width="1" height="26"/><rect x="30" y="0" width="2" height="26"/><rect x="34" y="0" width="1" height="26"/><rect x="37" y="0" width="3" height="26"/><rect x="42" y="0" width="2" height="26"/><rect x="46" y="0" width="1" height="26"/><rect x="49" y="0" width="3" height="26"/><rect x="54" y="0" width="1" height="26"/><rect x="57" y="0" width="2" height="26"/><rect x="61" y="0" width="3" height="26"/></g></symbol>
+</defs>
+</svg>
+
+<div class="page">
+  <div class="phone-wrap"><div class="phone" id="phone"><div class="screen" id="screen"></div></div></div>
+</div>
+
+<script>
+const CFG = {"game": false, "mode": "", "rule": "", "msg": ""};
+
+const START = CFG.game ? GARDEN.START : { hv: 0, tr: 0, stages: [], ripe: null, waters: 0 };
+const copyStart = () => ({ ...START, stages: [...START.stages] });
+
+/* ---------- каталог ---------- */
+const CATS = [
+  { id: 'veg',    name: 'Овощи и фрукты', label: 'Овощи<br>и фрукты', ic: 'c-veg',    bg: '#E2F4EA', g: 'food' },
+  { id: 'milk',   name: 'Молочное',       label: 'Молочное',          ic: 'c-milk',   bg: '#E3F0F7', g: 'food' },
+  { id: 'bread',  name: 'Хлеб',           label: 'Хлеб',              ic: 'c-bread',  bg: '#FDEAD5', g: 'food' },
+  { id: 'groc',   name: 'Бакалея',        label: 'Бакалея',           ic: 'c-groc',   bg: '#F5EEDD', g: 'food' },
+  { id: 'meat',   name: 'Мясо и рыба',    label: 'Мясо<br>и рыба',    ic: 'c-meat',   bg: '#FBE4E2', g: 'food' },
+  { id: 'drinks', name: 'Напитки',        label: 'Напитки',           ic: 'c-drinks', bg: '#E3F2FB', g: 'food' },
+  { id: 'chem',   name: 'Бытовая химия',  label: 'Бытовая<br>химия',  ic: 'c-chem',   bg: '#E6EEFB', g: 'home' },
+  { id: 'care',   name: 'Уход и гигиена', label: 'Уход<br>и гигиена', ic: 'c-care',   bg: '#E6F4F7', g: 'home' },
+  { id: 'cosm',   name: 'Косметика',      label: 'Косметика',         ic: 'c-cosm',   bg: '#FBE8F0', g: 'home' },
+  { id: 'pet',    name: 'Зоотовары',      label: 'Зоотовары',         ic: 'c-pet',    bg: '#F1EAFA', g: 'home' }
+];
+const P = (id, cat, name, price, ic, bg, st = '') => ({ id, cat, name, price, ic, bg, st });
+const PRODUCTS = [
+  P('apple', 'veg', 'Яблоки, 1 кг', 129, 'p-apple', '#FDEDE6'),
+  P('carrot', 'veg', 'Морковь, 1 кг', 59, 'p-carrots', '#FFF0E3'),
+  P('tomato', 'veg', 'Томаты, 500 г', 149, 'p-tomato', '#FDE9E5'),
+  P('banana', 'veg', 'Бананы, 1 кг', 119, 'p-banana', '#FFF6D9'),
+  P('cabbage', 'veg', 'Капуста белокочанная, 1 кг', 39, 'cabbage', '#EAF6E4'),
+  P('pumpkin', 'veg', 'Тыква, 1 кг', 69, 'pumpkin', '#FFEEDD'),
+  P('milk', 'milk', 'Молоко 3,2 %, 1 л', 89, 'p-carton', '#E3F0F7', 'color:#2E9FD0'),
+  P('kefir', 'milk', 'Кефир 1 %, 900 г', 79, 'p-carton', '#E4F4EA', 'color:#3DAE7A'),
+  P('cheese', 'milk', 'Сыр, 200 г', 219, 'p-cheese', '#FFF5D6'),
+  P('yogurt', 'milk', 'Йогурт клубничный, 125 г', 45, 'p-tub', '#FBE8EE', 'color:#E86A8E'),
+  P('tvorog', 'milk', 'Творог 5 %, 200 г', 109, 'p-tub', '#E3F0F7', 'color:#2E9FD0'),
+  P('butter', 'milk', 'Масло сливочное 82,5 %, 180 г', 189, 'p-butter', '#FFF5D6'),
+  P('bread', 'bread', 'Хлеб пшеничный', 59, 'p-bread', '#FDF0DE'),
+  P('baton', 'bread', 'Батон нарезной', 49, 'c-bread', '#FDEAD5'),
+  P('baguette', 'bread', 'Багет', 69, 'p-baguette', '#FDF0DE'),
+  P('rye', 'bread', 'Хлеб ржаной', 55, 'p-bread', '#F3E6DA', 'filter:brightness(.7) saturate(.85)'),
+  P('buckwheat', 'groc', 'Гречка, 900 г', 99, 'p-pack', '#F5EEDD', 'color:#8B5E3C;--g:#A0694A'),
+  P('pasta', 'groc', 'Макароны, 450 г', 79, 'p-pack', '#FFF4DE', 'color:#E8A23C;--g:#F5D27A'),
+  P('rice', 'groc', 'Рис, 900 г', 109, 'p-pack', '#E8F1F9', 'color:#3E8ED0;--g:#E4DED2'),
+  P('sugar', 'groc', 'Сахар, 1 кг', 85, 'p-pack', '#FBE8EC', 'color:#D8576B;--g:#E8E2DA'),
+  P('chicken', 'meat', 'Куриное филе, 500 г', 289, 'p-chicken', '#FBE9E4'),
+  P('mince', 'meat', 'Фарш говяжий, 400 г', 329, 'p-mince', '#FBE4E2'),
+  P('salmon', 'meat', 'Филе лосося, 200 г', 499, 'p-fish', '#FFEDE3'),
+  P('sausage', 'meat', 'Сосиски молочные, 400 г', 219, 'p-sausage', '#FDEDEA'),
+  P('water', 'drinks', 'Вода питьевая, 1,5 л', 49, 'p-bottle', '#E3F2FB', 'color:#7CC4F0'),
+  P('juice', 'drinks', 'Сок яблочный, 1 л', 129, 'p-carton', '#EEF6E2', 'color:#7BBF4A'),
+  P('tea', 'drinks', 'Чай черный, 100 пакетиков', 249, 'p-box', '#E5F1EA', 'color:#2F6F4E;--g:#FFB37A'),
+  P('coffee', 'drinks', 'Кофе молотый, 250 г', 399, 'p-pack', '#F1E7DF', 'color:#5B3A28;--g:#3E2A1E'),
+  P('dish', 'chem', 'Средство для мытья посуды, 500 мл', 119, 'p-bottle', '#EEF6E2', 'color:#8BC34A'),
+  P('powder', 'chem', 'Стиральный порошок, 2,4 кг', 549, 'p-box', '#E6EEFB', 'color:#3E8ED0;--g:#9AD0F5'),
+  P('glass', 'chem', 'Средство для стекол, 500 мл', 159, 'p-spray', '#E3F2FB', 'color:#5BC0EB'),
+  P('gel', 'chem', 'Гель для стирки, 1 л', 399, 'p-bottle', '#F1EAFA', 'color:#9C6ADE'),
+  P('paste', 'care', 'Зубная паста, 100 мл', 149, 'p-tube', '#E6EEFB', 'color:#3E8ED0'),
+  P('shampoo', 'care', 'Шампунь, 400 мл', 299, 'p-bottle', '#FBE8EE', 'color:#E86A8E'),
+  P('paper', 'care', 'Туалетная бумага, 8 рулонов', 259, 'p-roll', '#E6F4F7', 'color:#2A8BE8'),
+  P('soap', 'care', 'Мыло жидкое, 300 мл', 129, 'p-pump', '#FFEEDD', 'color:#FFB37A'),
+  P('handcream', 'cosm', 'Крем для рук, 75 мл', 189, 'p-tube', '#FFEEDD', 'color:#F39A57'),
+  P('balm', 'cosm', 'Бальзам для губ', 159, 'p-balm', '#FBE8EE', 'color:#D94A6E'),
+  P('micellar', 'cosm', 'Мицеллярная вода, 400 мл', 349, 'p-bottle', '#FBEFF5', 'color:#E3A6C9'),
+  P('facecream', 'cosm', 'Крем для лица, 50 мл', 449, 'p-jar', '#FBE8F0', 'color:#E86A8E'),
+  P('catfood', 'pet', 'Корм для кошек, 85 г', 39, 'p-pouch', '#F1EAFA', 'color:#9C6ADE'),
+  P('dogfood', 'pet', 'Корм для собак, 1 кг', 399, 'p-pack', '#F7EEE2', 'color:#C47F3C;--g:#8B5E3C'),
+  P('litter', 'pet', 'Наполнитель для лотка, 5 л', 299, 'p-pack', '#E3F2FB', 'color:#4FB6E0;--g:#E4DED2')
+];
+const BY_ID = Object.fromEntries(PRODUCTS.map(p => [p.id, p]));
+const PICKS = ['apple', 'bread', 'cheese'];   // «Подборка недели», как на экранах 3 и 4
+
+document.documentElement.lang = 'ru';
+const $ = s => document.querySelector(s);
+const $$ = s => document.querySelectorAll(s);
+const u = (id, w, h, extra='') => `<svg width="${w}" height="${h}" ${extra} aria-hidden="true"><use href="#${id}"/></svg>`;
+const nb = s => s.replace(/ (кг|г|л|мл|%)(?=,|$)/g, ' $1').replace(/(\d) (?=\S)/g, '$1 ');
+const plain = s => s.replace(/ /g, ' ');
+const rub = n => String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' ₽';
+const img = (p, w, h) => u(p.ic, w, h, p.st ? `style="${p.st}"` : '');
+
+const statusBar = `<div class="island"></div><div class="status"><span>9:41</span><span class="ic">
+  <svg width="19" height="12" viewBox="0 0 19 12" aria-hidden="true"><rect x="0" y="8" width="3.2" height="4" rx="1" fill="#1A1A1A"/><rect x="5" y="5.5" width="3.2" height="6.5" rx="1" fill="#1A1A1A"/><rect x="10" y="3" width="3.2" height="9" rx="1" fill="#1A1A1A"/><rect x="15" y="0" width="3.2" height="12" rx="1" fill="#1A1A1A"/></svg>
+  <svg width="17" height="12" viewBox="0 0 17 12" aria-hidden="true"><path d="M8.5 2.6c2.3 0 4.4.9 6 2.4l1.3-1.4A10.3 10.3 0 008.5.6 10.3 10.3 0 001.2 3.6L2.5 5a8.4 8.4 0 016-2.4zm0 3.6c1.3 0 2.5.5 3.4 1.3l1.3-1.4a7 7 0 00-9.4 0l1.3 1.4c.9-.8 2.1-1.3 3.4-1.3zm0 3.4l1.9 2-1.9 1.9-1.9-1.9z" fill="#1A1A1A"/></svg>
+  <svg width="27" height="13" viewBox="0 0 27 13" aria-hidden="true"><rect x=".5" y=".5" width="23" height="12" rx="3.8" fill="none" stroke="#1A1A1A" opacity=".4"/><rect x="2.2" y="2.2" width="19.6" height="8.6" rx="2.4" fill="#1A1A1A"/><path d="M25 4.5v4c.8-.3 1.4-1.1 1.4-2s-.6-1.7-1.4-2z" fill="#1A1A1A" opacity=".45"/></svg>
+  </span></div>`;
+
+const nav = (title, right = 'info') => `<div class="nav"><button type="button" class="cbtn" data-act="back" aria-label="Назад">${u('i-back',22,22)}</button><div class="t">${title}</div>${right === 'info' ? `<button type="button" class="cbtn" data-act="info" aria-label="Правила игры">${u('i-info',22,22)}</button>` : '<div class="ph"></div>'}</div>`;
+
+const scene = h => `<svg width="350" height="${h}" viewBox="0 ${h<238?30:0} 350 ${h}" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><use href="#scene" width="350" height="238"/></svg>`;
+
+const catTile = c => `<button type="button" class="cat" data-act="cat" data-cat="${c.id}" style="background:${c.bg}"><span>${c.label}</span>${u(c.ic,74,64)}</button>`;
+const tiles = list => `<div class="cats">${list.map(catTile).join('')}</div>`;
+
+const prodCard = (p, big = false) => `<div class="prod"><div class="pi" style="background:${p.bg}">${big ? img(p, 100, 80) : img(p, 78, 62)}</div><div class="pn">${nb(p.name)}</div><div class="pp"><b>${rub(p.price)}</b><button type="button" class="plus" data-act="add" data-id="${p.id}" aria-label="Добавить в корзину: ${p.name}">${u('i-plus',18,18)}</button></div></div>`;
+const picks = () => `<div class="prods">${PICKS.map(id => prodCard(BY_ID[id])).join('')}</div>`;
+const grid = list => `<div class="grid2">${list.map(p => prodCard(p, true)).join('')}</div>`;
+
+const tabbar = active => `<div class="tabbar">
+    <button type="button" class="tab ${active==='main'?'on':''}" data-act="tab-main">${u('t-home',26,26)}Главная</button>
+    <button type="button" class="tab ${active==='catalog'?'on':''}" data-act="tab-catalog">${u('t-cat',26,26)}Каталог</button>
+    <button type="button" class="tab ${active==='cart'?'on':''}" data-act="tab-cart">${u('t-cart',26,26)}Корзина<span class="badge" hidden></span></button>
+    <button type="button" class="tab ${active==='profile'?'on':''}" data-act="tab-profile">${u('t-user',26,26)}Профиль</button>
+  </div>`;
+
+
+const PROMO_HERO = `<div class="hero" data-act="fresh">
+    <div class="ring" style="width:260px;height:260px;right:-90px;top:-120px"></div>
+    <div class="ring" style="width:180px;height:180px;right:-50px;top:-80px"></div>
+    <svg class="hero-ill" width="350" height="296" viewBox="0 0 350 296" aria-hidden="true">
+      <circle cx="262" cy="196" r="96" fill="#FFE3C8" opacity=".16"/>
+      <circle cx="262" cy="196" r="62" fill="#FFE3C8" opacity=".14"/>
+      <path d="M0 268 C80 238 200 236 350 254 L350 296 L0 296Z" fill="#13489E" opacity=".55"/>
+      <use href="#p-carrots" x="252" y="140" width="104" height="80"/>
+      <use href="#p-apple" x="196" y="164" width="104" height="80"/>
+      <use href="#p-bread" x="206" y="206" width="124" height="96"/>
+      <use href="#p-banana" x="270" y="206" width="96" height="74"/>
+      <g fill="#fff" opacity=".7"><path d="M262 30l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/><path d="M332 112l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5z"/><path d="M196 120l1.5 3.5 3.5 1.5-3.5 1.5-1.5 3.5-1.5-3.5-3.5-1.5 3.5-1.5z"/></g>
+    </svg>
+    <div class="hero-text">
+      <div class="hero-title">Свежие продукты каждый день</div>
+      <div class="hero-sub">Овощи, фрукты и хлеб</div>
+      <button type="button" class="play" data-act="fresh">Смотреть</button>
+    </div>
+  </div>`;
+const VIEWS = {
+main: () => `<div class="sp"></div>
+  <div class="top"><div class="logo"><div class="mark">${u('basket',28,28)}</div><div class="word">Корзинка</div></div><button type="button" class="cbtn" data-act="bell" aria-label="Уведомления">${u('i-bell',24,24)}</button></div>
+  <button type="button" class="search" data-act="search">${u('i-search',22,22)}<span>Найти товары</span></button>
+  ${CFG.game ? GAME_HERO : PROMO_HERO}
+  <div class="sec-h" style="margin-top:22px"><b>Категории</b><button type="button" data-act="tab-catalog">Все</button></div>
+  ${tiles(CATS.slice(0, 4))}
+  ${tabbar('main')}`,
+
+catalog: () => `<div class="sp"></div>${nav('Каталог', 'none')}
+  <div class="scroll">
+    <button type="button" class="search" data-act="search" style="margin-top:4px">${u('i-search',22,22)}<span>Найти товары</span></button>
+    <div class="sec-h" style="margin-top:20px"><b>Продукты</b></div>
+    ${tiles(CATS.filter(c => c.g === 'food'))}
+    <div class="sec-h" style="margin-top:22px"><b>Для дома и красоты</b></div>
+    ${tiles(CATS.filter(c => c.g === 'home'))}
+    <div class="sec-h" style="margin-top:22px"><b>Подборка недели</b></div>
+    ${picks()}
+  </div>
+  ${tabbar('catalog')}`,
+
+category: () => `<div class="sp"></div>${nav('<span id="cat-t"></span>', 'none')}
+  <div class="scroll" id="cat-body"></div>`,
+
+search: () => `<div class="sp"></div>${nav('Поиск', 'none')}
+  <label class="input">${u('i-search',22,22)}<input id="q" type="search" placeholder="Найти товары" autocomplete="off" aria-label="Поиск товаров"></label>
+  <div class="scroll below-input" id="search-body"></div>`,
+
+notif: () => `<div class="sp"></div>${nav('Уведомления', 'none')}
+  <div class="scroll">
+    ${''}
+    <button type="button" class="ntf${CFG.game ? '' : ' new'}" data-act="catalog"><div class="ni" style="background:#FDEDE6">${u('p-apple',40,32)}</div><div><div class="nt">Подборка недели обновилась</div><div class="nb">Яблоки, хлеб и сыр уже в каталоге</div><div class="nd">Вчера</div></div></button>
+    <div class="ntf"><div class="ni" style="background:var(--brand-l)">${u('i-bellb',24,24)}</div><div><div class="nt">Добро пожаловать в Корзинку!</div><div class="nb">Здесь будут новости магазина и ваших заказов</div><div class="nd">3 дня назад</div></div></div>
+  </div>`,
+
+cart: () => `<div class="sp"></div>${nav('Корзина', 'none')}
+  <div class="scroll" id="cart-body"></div>
+  ${tabbar('cart')}`,
+
+profile: () => `<div class="sp"></div>${nav('Профиль', 'none')}
+  <div class="scroll">
+    <div class="pf-head"><div class="ava">${u('i-user',30,30)}</div><div><div class="pf-name">Покупатель</div><div class="pf-sub">Участник программы «Корзинка»</div></div></div>
+    <div class="lcard">
+      <div class="ring" style="width:220px;height:220px;right:-80px;top:-110px"></div>
+      <div class="lt">Карта Корзинки</div>
+      <div class="lp" id="pf-pts">0 баллов</div>
+      <div class="ls">Баллами можно оплатить покупки</div>
+      <div class="bc">${u('barcode',64,26)}</div>
+    </div>
+    <div class="menu">
+      ${''}
+      <button type="button" class="row" data-act="orders"><span class="mi2">${u('i-box',24,24)}</span><span>Мои заказы</span><span class="chev">${u('i-chev',20,20)}</span></button>
+      <button type="button" class="row" data-act="address"><span class="mi2">${u('i-pin',24,24)}</span><span>Адреса доставки</span><span class="chev">${u('i-chev',20,20)}</span></button>
+      <button type="button" class="row" data-act="bell"><span class="mi2">${u('i-bellb',24,24)}</span><span>Уведомления</span><span class="chev">${u('i-chev',20,20)}</span></button>
+      <button type="button" class="row" data-act="help"><span class="mi2">${u('i-help',24,24)}</span><span>Помощь</span><span class="chev">${u('i-chev',20,20)}</span></button>
+    </div>
+  </div>
+  ${tabbar('profile')}`,
+
+orders: () => `<div class="sp"></div>${nav('Мои заказы', 'none')}
+  <div class="scroll" id="orders-body"></div>`,
+
+checkout: () => `<div class="sp"></div>${nav('Оформление заказа', 'none')}
+  <div class="scroll" id="co-body"></div>`,
+
+done: () => `<div class="sp"></div><div class="done-wrap" id="done-body"></div>`,
+
+address: () => `<div class="sp"></div>${nav('Адреса доставки', 'none')}
+  <div class="scroll">
+    <div class="addr"><div class="ai">${u('i-pin',24,24)}</div><div><div class="at">Магазин у дома</div><div class="as">ул. Садовая, 12 · с 8:00 до 23:00</div><span class="tag">Самовывоз</span></div></div>
+    <button type="button" class="btn" data-act="addaddr" style="margin:6px 20px 0">Добавить адрес</button>
+  </div>`,
+
+help: () => `<div class="sp"></div>${nav('Помощь', 'none')}
+  <div class="scroll faq">
+    ${''}
+    <details><summary>Как потратить баллы?</summary><p>Баллами можно оплатить часть покупки в магазине или в приложении: 1 балл равен 1 ₽.</p></details>
+    <details><summary>Как изменить адрес доставки?</summary><p>Откройте «Профиль», затем «Адреса доставки».</p></details>
+  </div>`
+};
+
+/* ---------- build the phone ---------- */
+const TITLES = { main: 'Главная', catalog: 'Каталог', category: 'Категория', search: 'Поиск',
+  notif: 'Уведомления', cart: 'Корзина', profile: 'Профиль', orders: 'Мои заказы', address: 'Адреса доставки', help: 'Помощь',
+  checkout: 'Оформление заказа', done: 'Заказ оформлен' };
+const EXTRA = { rules: 's-rules', game: 's-end', catalog: 'has-tabs', cart: 'has-tabs', profile: 'has-tabs' };
+const screenEl = $('#screen');
+const VIEW_KEYS = Object.keys(VIEWS).filter(k => CFG.game || (k !== 'rules' && k !== 'game'));
+screenEl.innerHTML = VIEW_KEYS.map(k =>
+  `<section class="view ${EXTRA[k] || ''}" id="v-${k}" aria-label="${TITLES[k]}">${VIEWS[k]()}</section>`).join('')
+  + `<div class="overlay" aria-hidden="true">${statusBar}<div class="homebar"></div></div><div class="toast" id="toast" role="status" aria-live="polite"></div>`;
+
+const game = $('#v-game'), garden = $('#garden'), waterBtn = $('#water');
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const state = { ...copyStart(), busy: false, harvesting: false, points: 0, cart: {}, orders: [], co: { mode: 'delivery', slot: 0, pay: 0 } };
+let gen = 0;   // растет при сбросе, чтобы таймеры прерванного полива не меняли новую игру
+const SAVE_KEY = 'korzinka:' + (CFG.rule || 'k');
+function save() {
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify({ hv: state.hv, tr: state.tr, stages: state.stages, ripe: state.ripe,
+    waters: state.waters, points: state.points, cart: state.cart, orders: state.orders, day: new Date().toDateString() })); } catch (e) {}
+}
+function load() {
+  try {
+    if (location.hash === '#reset') { localStorage.removeItem(SAVE_KEY); history.replaceState(null, '', location.pathname); return {}; }
+    const d = JSON.parse(localStorage.getItem(SAVE_KEY)) || {};
+    /* правило «неиспользованные попытки сгорают в 00:00»: в новый день старые попытки сгорают,
+       при ежедневных попытках появляются 3 новые */
+    if (CFG.game && d.day && d.day !== new Date().toDateString() && typeof d.tr === 'number') d.tr = CFG.mode === 'daily' ? 3 : 0;
+    return d;
+  } catch (e) { return {}; }
+}
+let stack = ['main'];
+
+/* ---------- navigation ---------- */
+const DUR = reduce ? 0 : 360;
+function place(el, x, z, animate) {
+  el.style.transition = animate && DUR ? `transform ${DUR}ms cubic-bezier(.22,.8,.24,1)` : 'none';
+  el.style.transform = `translateX(${x}%)`;
+  el.style.zIndex = z;
+}
+let navTimer, curView = null;
+function show(id, dir) {
+  const cur = curView, nxt = $('#v-' + id);
+  nxt.classList.toggle('root', stack.length === 1);
+  if (cur === nxt) return;
+  curView = nxt;
+  clearTimeout(navTimer);
+  $$('.view').forEach(v => { if (v !== cur && v !== nxt) { v.classList.remove('on'); place(v, 0, 0, false); } });
+  nxt.classList.add('on');
+  if (!cur || dir === 'none' || !DUR) {
+    place(nxt, 0, 2, false);
+    if (cur) { cur.classList.remove('on'); place(cur, 0, 0, false); }
+    return;
+  }
+  place(nxt, dir === 'fwd' ? 100 : -28, dir === 'fwd' ? 3 : 1, false);
+  void nxt.offsetWidth;
+  place(nxt, 0, dir === 'fwd' ? 3 : 1, true);
+  place(cur, dir === 'fwd' ? -28 : 100, dir === 'fwd' ? 1 : 3, true);
+  navTimer = setTimeout(() => { cur.classList.remove('on'); place(cur, 0, 0, false); nxt.style.zIndex = 2; }, DUR + 20);
+}
+function push(id) {
+  const at = stack.indexOf(id);
+  if (at === stack.length - 1) return;
+  if (at >= 0) { stack = stack.slice(0, at + 1); show(id, 'back'); return; }
+  stack.push(id); show(id, 'fwd');
+}
+function back() { if (placing || stack.length < 2) return; stack.pop(); show(stack[stack.length - 1], 'back'); }
+function goRoot(id) { if (stack.length === 1 && stack[0] === id) return; stack = [id]; show(id, 'none'); }
+
+/* ---------- toast ---------- */
+let toastTimer;
+function toast(text) {
+  const t = $('#toast'); t.textContent = text; t.classList.add('show');
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove('show'), 1700);
+}
+
+/* ---------- game ---------- */
+function paintCounters(bump) {
+  if (!CFG.game) return;
+  $('#hv').textContent = state.hv;
+  $('#tr').textContent = state.tr;
+  $('#pf-hv').textContent = state.hv;
+  $('#hbar').style.width = state.hv * 10 + '%';
+  if (bump && !reduce) ['#chip', '.stats .lab'].forEach(s => { const e = $(s); e.classList.remove('bump'); void e.offsetWidth; e.classList.add('bump'); });
+}
+function paintPoints() {
+  $('#pf-pts').textContent = String(state.points).replace(/\B(?=(\d{3})+(?!\d))/g, '\u00a0') + ' ' + plural(state.points, 'балл', 'балла', 'баллов');
+}
+function setReward(on) {
+  if (!CFG.game) return;
+  game.classList.toggle('rewarded', on);
+  $('#reward').inert = !on;
+  game.querySelector('.veil').inert = !(on || game.classList.contains('spent'));
+  if (on) $('#reward button').focus({ preventScroll: true });
+}
+function rewardOk() {
+  state.points += 500; state.hv = 0;
+  paintCounters(false); paintPoints(); setReward(false); save();
+  if (state.tr === 0) setSpent(true);
+}
+function setSpent(on) {
+  if (!CFG.game) return;
+  game.classList.toggle('spent', on);
+  const veil = game.querySelector('.veil'), modal = game.querySelector('.modal:not(.reward)');
+  modal.inert = !on; veil.inert = !(on || game.classList.contains('rewarded'));
+  waterBtn.disabled = on;
+  if (on && (document.activeElement === waterBtn || document.activeElement === document.body)) modal.querySelector('button').focus({ preventScroll: true });
+}
+function paintGarden() {
+  if (!CFG.game) return;
+  $$('#garden .plot').forEach(g => g.setAttribute('class', `plot st${state.stages[+g.dataset.i]}${state.ripe === +g.dataset.i ? ' ripe' : ''}`));
+  $('#hint').textContent = state.ripe == null ? GARDEN.HINT_IDLE : GARDEN.HINT_RIPE;
+  const pick = $('#garden .pick');
+  if (state.ripe == null) { pick.hidden = true; return; }
+  const t = ripeOf(state.ripe);
+  pick.hidden = false;
+  pick.style.left = (GARDEN.X[state.ripe] - 44) + 'px';
+  pick.style.top = (GARDEN.BASE - t.h + t.off - 40) + 'px';
+  pick.style.height = (t.h + 40) + 'px';
+}
+function nudge() {
+  const r = $(`#garden .plot[data-i="${state.ripe}"]`), h = $('#hint');
+  [r, h].forEach(e => { e.classList.remove('nudge', 'flash'); void e.getBoundingClientRect(); });
+  r.classList.add('nudge'); h.classList.add('flash');
+}
+function fly(i) {
+  if (reduce) return;
+  const t = ripeOf(i), [fs, fw, fh] = GARDEN.TYPES[GARDEN.PLOTS[i]].fruit, stats = $('#v-game .stats');
+  const x0 = garden.offsetLeft + GARDEN.X[i] - fw / 2, y0 = garden.offsetTop + GARDEN.BASE - t.h + t.off + (t.h - fh) / 2;
+  const dx = stats.offsetLeft + 30 - x0, dy = stats.offsetTop + 4 - y0;
+  const el = document.createElement('div');
+  el.className = 'flyer'; el.innerHTML = u(fs, fw, fh);
+  el.style.left = x0 + 'px'; el.style.top = y0 + 'px';
+  game.appendChild(el);
+  el.animate([
+    { transform: 'translate(0,0) scale(1)', opacity: 1 },
+    { transform: `translate(${dx * .45}px, ${dy * .45 - 40}px) scale(.85)`, opacity: 1, offset: .45 },
+    { transform: `translate(${dx}px, ${dy}px) scale(.35)`, opacity: .15 }
+  ], { duration: 680, easing: 'cubic-bezier(.45,0,.55,1)' }).onfinish = () => el.remove();
+}
+function water() {
+  if (!CFG.game || state.busy || state.harvesting) return;
+  if (state.ripe != null) { nudge(); return; }
+  if (state.tr <= 0) return;
+  const kb = document.activeElement === waterBtn;
+  state.busy = true; waterBtn.setAttribute('aria-disabled', 'true');
+  const next = gardenWater(state);
+  state.tr = next.tr; paintCounters(true);
+  garden.classList.add('watering');
+  const g = gen;
+  setTimeout(() => {
+    if (g !== gen) return;
+    state.waters = next.waters; state.ripe = next.ripe; state.stages = next.stages;
+    paintGarden(); save();
+  }, reduce ? 0 : 650);
+  setTimeout(() => {
+    if (g !== gen) return;
+    garden.classList.remove('watering');
+    state.busy = false; waterBtn.removeAttribute('aria-disabled');
+    if (kb && state.ripe != null) $('#garden .pick').focus({ preventScroll: true });
+  }, reduce ? 0 : 1150);
+}
+function harvest() {
+  if (!CFG.game || state.harvesting || state.ripe == null) return;
+  const kb = document.activeElement === $('#garden .pick');
+  const i = state.ripe, t = ripeOf(i), next = gardenHarvest(state);
+  state.harvesting = true;
+  fly(i);
+  const p1 = $('#garden .plus1');
+  const [fs] = GARDEN.TYPES[GARDEN.PLOTS[i]].fruit;
+  p1.innerHTML = u(fs, 28, 24) + '+1';
+  p1.style.left = GARDEN.X[i] + 'px'; p1.style.top = (GARDEN.BASE - t.h + t.off - 6) + 'px';
+  garden.classList.remove('harvest'); void garden.offsetWidth; garden.classList.add('harvest');
+  state.ripe = null; state.stages = next.stages; paintGarden();
+  const g = gen;
+  setTimeout(() => {
+    if (g !== gen) return;
+    state.hv = next.hv; paintCounters(true); state.harvesting = false; save();
+    if (state.hv >= 10) setTimeout(() => { if (g === gen) setReward(true); }, reduce ? 0 : 350);
+    else if (state.tr === 0) setTimeout(() => { if (g === gen) setSpent(true); }, reduce ? 0 : 350);
+    else if (kb) waterBtn.focus({ preventScroll: true });
+  }, reduce ? 0 : 680);
+  setTimeout(() => { if (g === gen) garden.classList.remove('harvest'); }, 1100);
+}
+function resetGame() {
+  gen += 1;
+  if (!CFG.game) return;
+  Object.assign(state, copyStart(), { busy: false, harvesting: false });
+  setReward(false);
+  garden.classList.remove('watering', 'harvest');
+  game.querySelectorAll('.flyer').forEach(e => e.remove());
+  waterBtn.removeAttribute('aria-disabled');
+  paintCounters(false); paintGarden(); setSpent(false);
+}
+
+/* ---------- catalog, search, cart ---------- */
+function openCategory(id) {
+  const c = CATS.find(x => x.id === id); if (!c) return;
+  openList(c.name, PRODUCTS.filter(p => p.cat === id));
+}
+function openList(title, list) {
+  $('#cat-t').textContent = title;
+  const body = $('#cat-body');
+  body.innerHTML = `<div class="count">${list.length} ${plural(list.length, 'товар', 'товара', 'товаров')}</div>${grid(list)}`;
+  body.scrollTop = 0;
+  push('category');
+}
+function plural(n, one, few, many) {
+  const a = n % 10, b = n % 100;
+  return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many;
+}
+const norm = s => plain(s).toLowerCase().replace(/ё/g, 'е').trim();
+function renderSearch() {
+  const q = norm($('#q').value), body = $('#search-body');
+  if (!q) {
+    body.innerHTML = `<div class="sec-h"><b>Часто ищут</b></div>
+      <div class="chips">${['Яблоки', 'Молоко', 'Хлеб', 'Шампунь', 'Корм для кошек'].map(t => `<button type="button" class="chip2" data-act="chip" data-q="${t}">${t}</button>`).join('')}</div>
+      <div class="sec-h"><b>Подборка недели</b></div>${picks()}`;
+    return;
+  }
+  const found = PRODUCTS.filter(p => norm(p.name).includes(q) || norm(CATS.find(c => c.id === p.cat).name).includes(q));
+  body.innerHTML = found.length
+    ? `<div class="count">Нашлось ${found.length} ${plural(found.length, 'товар', 'товара', 'товаров')}</div>${grid(found)}`
+    : `<div class="nores">Ничего не нашлось. Попробуйте другое слово, например «сыр».</div>`;
+}
+function openSearch(text = '') {
+  const input = $('#q'); input.value = text; renderSearch(); $('#search-body').scrollTop = 0;
+  push('search');
+  setTimeout(() => { try { input.focus({ preventScroll: true }); } catch (e) {} }, DUR + 30);
+}
+function cartCount() { return Object.values(state.cart).reduce((a, b) => a + b, 0); }
+function paintBadges() {
+  const n = cartCount();
+  $$('.tab .badge').forEach(b => { b.hidden = n === 0; b.textContent = n > 99 ? '99+' : n; });
+}
+function renderCart() {
+  const items = cartItems();
+  const body = $('#cart-body');
+  if (!items.length) {
+    body.innerHTML = `<div class="empty"><div class="eic">${u('t-cart',48,48,'style="color:#1E6BD6"')}</div><div class="et">В корзине пока пусто</div><div class="es">Добавляйте товары кнопкой «+» в каталоге и в подборках</div><button type="button" class="btn" data-act="tab-catalog">Перейти в каталог</button></div>`;
+    return;
+  }
+  const sum = items.reduce((a, { p, q }) => a + p.price * q, 0), n = cartCount();
+  body.innerHTML = items.map(({ p, q }) => `<div class="cart-row"><div class="ci" style="background:${p.bg}">${img(p, 60, 48)}</div>
+      <div class="cx"><div class="cn">${nb(p.name)}</div><div class="cp">${rub(p.price * q)}</div></div>
+      <div class="step"><button type="button" data-act="dec" data-id="${p.id}" aria-label="Убрать одну штуку: ${p.name}">${u('i-minus',18,18)}</button><b>${q}</b><button type="button" data-act="inc" data-id="${p.id}" aria-label="Добавить еще одну: ${p.name}">${u('i-plusd',18,18)}</button></div></div>`).join('')
+    + `<div class="total"><div><span>Товары, ${n} шт.</span><span>${rub(sum)}</span></div><div><span>Доставка</span><span>Бесплатно</span></div><div class="sum"><span>Итого</span><span>${rub(sum)}</span></div></div>
+       <button type="button" class="btn wide" data-act="checkout">Оформить заказ</button>`;
+}
+const cartItems = () => Object.entries(state.cart).filter(([, q]) => q > 0).map(([id, q]) => ({ p: BY_ID[id], q }));
+const SLOTS = { delivery: ['Сегодня, 18:00–19:00', 'Сегодня, 20:00–21:00', 'Завтра, 10:00–11:00'],
+                pickup:   ['Через час', 'Сегодня к 19:00', 'Завтра к 10:00'] };
+const PAYS = ['Картой при получении', 'Наличными при получении', 'По QR-коду при получении'];
+const PLACE = { delivery: ['ул. Лесная, 8, кв. 14', 'Курьер позвонит за 15 минут'],
+                pickup:   ['Магазин у дома', 'ул. Садовая, 12 · с 8:00 до 23:00'] };
+function renderCheckout() {
+  const items = cartItems(), body = $('#co-body'), co = state.co;
+  if (!items.length) { body.innerHTML = ''; return; }
+  const sum = items.reduce((a, { p, q }) => a + p.price * q, 0), n = cartCount();
+  body.innerHTML = `<div class="co-sec"><div class="co-h">Как получить</div>
+      <div class="seg2">${[['delivery', 'Доставка'], ['pickup', 'Самовывоз']].map(([v, t]) => `<button type="button" data-act="co-mode" data-v="${v}" aria-pressed="${co.mode === v}">${t}</button>`).join('')}</div>
+      <div class="co-card"><span class="ai">${u('i-pin',22,22)}</span><div><div class="at">${PLACE[co.mode][0]}</div><div class="as">${PLACE[co.mode][1]}</div></div></div></div>
+    <div class="co-sec"><div class="co-h">Когда</div><div class="chips">${SLOTS[co.mode].map((t, i) => `<button type="button" class="chip2${i === co.slot ? ' on' : ''}" data-act="co-slot" data-v="${i}" aria-pressed="${i === co.slot}">${t}</button>`).join('')}</div></div>
+    <div class="co-sec"><div class="co-h">Оплата</div><div class="menu" role="radiogroup" aria-label="Оплата">${PAYS.map((t, i) => `<button type="button" class="row" role="radio" aria-checked="${i === co.pay}" data-act="co-pay" data-v="${i}"><span class="radio${i === co.pay ? ' on' : ''}"></span><span>${t}</span></button>`).join('')}</div></div>
+    <div class="total"><div><span>Товары, ${n}\u00a0шт.</span><span>${rub(sum)}</span></div><div><span>${co.mode === 'delivery' ? 'Доставка' : 'Самовывоз'}</span><span>Бесплатно</span></div><div class="sum"><span>Итого</span><span>${rub(sum)}</span></div></div>
+    <button type="button" class="btn wide" data-act="co-confirm" id="co-confirm">Подтвердить заказ</button>
+    <p class="co-note">Оплата при получении. Заказ можно отменить в «Моих заказах», пока его не начали собирать.</p>`;
+}
+let placing = false;
+function confirmOrder(btn) {
+  if (placing || !cartCount()) return;
+  placing = true; btn.disabled = true; btn.textContent = 'Оформляем…';
+  const items = cartItems(), co = state.co;
+  const order = { no: 4821 + state.orders.length, items: items.map(({ p, q }) => [p.id, q]),
+    n: cartCount(), sum: items.reduce((a, { p, q }) => a + p.price * q, 0),
+    mode: co.mode, slot: SLOTS[co.mode][co.slot], pay: PAYS[co.pay] };
+  setTimeout(() => {
+    placing = false;
+    state.orders.unshift(order);
+    const bonus = CFG.game && CFG.mode === 'purchase' && order.sum >= 800;
+    if (bonus) { state.tr += 3; paintCounters(false); setSpent(false); }
+    state.cart = {}; paintBadges(); renderCart(); save();
+    $('#done-body').innerHTML = `<div class="ok">${u('i-check',52,52)}</div>
+      <div class="et">Заказ оформлен!</div>
+      <div class="es">Номер заказа №\u00a0${order.no}</div>
+      <div class="co-card"><span class="ai">${u('i-clock2',22,22)}</span><div><div class="at">${order.slot}</div><div class="as">${order.mode === 'delivery' ? 'Доставка: ' + PLACE.delivery[0] : 'Самовывоз: ' + PLACE.pickup[1].split(' · ')[0]}<br>${order.pay}</div></div></div>
+      ${''}
+      <button type="button" class="btn${bonus ? ' ghost' : ''}" data-act="my-orders">Мои заказы</button>
+      <button type="button" class="btn ghost" data-act="tab-main">На главную</button>`;
+    stack = ['done']; show('done', 'fwd');
+  }, reduce ? 0 : 900);
+}
+function renderOrders() {
+  const body = $('#orders-body');
+  if (!state.orders.length) {
+    body.innerHTML = `<div class="empty"><div class="eic">${u('i-box',48,48)}</div><div class="et">Заказов пока нет</div><div class="es">Здесь появятся ваши покупки в магазинах и в приложении</div><button type="button" class="btn" data-act="tab-catalog">Перейти в каталог</button></div>`;
+    return;
+  }
+  body.innerHTML = state.orders.map(o => `<div class="order"><div class="oh"><span>Заказ №\u00a0${o.no}</span><span class="st">Собирается</span></div>
+    <div class="os">${o.slot} · ${o.mode === 'delivery' ? 'доставка' : 'самовывоз'}<br>${o.n}\u00a0${plural(o.n, 'товар', 'товара', 'товаров')} на ${rub(o.sum)} · ${o.pay[0].toLowerCase() + o.pay.slice(1)}</div>
+    <div class="oi">${o.items.slice(0, 6).map(([id]) => `<span style="background:${BY_ID[id].bg}">${img(BY_ID[id], 40, 32)}</span>`).join('')}</div></div>`).join('');
+}
+function addToCart(id, d = 1) {
+  state.cart[id] = Math.max(0, (state.cart[id] || 0) + d);
+  if (!state.cart[id]) delete state.cart[id];
+  paintBadges(); save();
+  if ($('#v-cart').classList.contains('on')) renderCart();
+}
+
+/* ---------- texts of this version ---------- */
+function applyTexts() { $$('[data-diff]').forEach(e => { e.textContent = CFG[e.dataset.diff]; }); }
+
+/* ---------- actions ---------- */
+const ACTIONS = {
+  back,
+  catalog: () => push('catalog'),
+  cat: el => openCategory(el.dataset.cat),
+  fresh: () => openList('Свежие продукты', PRODUCTS.filter(p => p.cat === 'veg' || p.cat === 'bread')),
+  'tab-main': () => goRoot('main'),
+  'tab-catalog': () => goRoot('catalog'),
+  'tab-cart': () => { renderCart(); goRoot('cart'); },
+  'tab-profile': () => goRoot('profile'),
+  add: el => { addToCart(el.dataset.id); toast('Добавлено в корзину'); },
+  inc: el => addToCart(el.dataset.id, 1),
+  dec: el => addToCart(el.dataset.id, -1),
+  checkout: () => { state.co = { mode: 'delivery', slot: 0, pay: 0 }; renderCheckout(); $('#co-body').scrollTop = 0; push('checkout'); },
+  'co-mode': el => { if (placing) return; state.co.mode = el.dataset.v; state.co.slot = 0; renderCheckout(); },
+  'co-slot': el => { if (placing) return; state.co.slot = +el.dataset.v; renderCheckout(); },
+  'co-pay': el => { if (placing) return; state.co.pay = +el.dataset.v; renderCheckout(); },
+  'co-confirm': el => confirmOrder(el),
+  'my-orders': () => { renderOrders(); stack = ['profile', 'orders']; show('orders', 'fwd'); },
+  search: () => openSearch(),
+  chip: el => { $('#q').value = el.dataset.q; renderSearch(); },
+  bell: () => push('notif'),
+  orders: () => { renderOrders(); push('orders'); },
+  address: () => push('address'),
+  addaddr: () => toast('Добавление адреса в прототипе недоступно'),
+  help: () => push('help')
+};
+screenEl.addEventListener('click', e => {
+  const el = e.target.closest('[data-act]');
+  if (!el || !screenEl.contains(el)) return;
+  e.stopPropagation();
+  ACTIONS[el.dataset.act]?.(el);
+});
+$('#q').addEventListener('input', renderSearch);
+
+/* ---------- fit the phone to the window ---------- */
+function fit() {
+  const phone = $('#phone');
+  const bare = matchMedia('(display-mode: standalone)').matches || navigator.standalone === true
+    || (innerWidth <= 520 && matchMedia('(pointer: coarse)').matches);
+  document.body.classList.toggle('bare', bare);
+  if (bare) {
+    const z = Math.min(innerWidth / 390, innerHeight / 804);
+    phone.style.setProperty('--s', z.toFixed(4));
+    screenEl.style.setProperty('--h', (innerHeight / z).toFixed(1) + 'px');
+    return;
+  }
+  screenEl.style.removeProperty('--h');
+  const s = Math.min((innerWidth - 32) / 414, (innerHeight - 48) / 868, 1.15);
+  phone.style.setProperty('--s', Math.max(s, .45).toFixed(3));
+}
+addEventListener('resize', fit);
+
+/* ---------- boot ---------- */
+function start(data) {
+  applyTexts();
+  if (typeof data.hv === 'number') { state.hv = data.hv; state.tr = data.tr; }
+  if (Array.isArray(data.stages) && data.stages.length === START.stages.length) { state.stages = [...data.stages]; state.ripe = data.ripe ?? null; state.waters = data.waters || 0; }
+  if (data.cart && typeof data.cart === 'object') state.cart = { ...data.cart };
+  if (typeof data.points === 'number') state.points = data.points;
+  if (Array.isArray(data.orders)) state.orders = data.orders.filter(o => o && Array.isArray(o.items));
+  paintCounters(false); paintGarden(); paintPoints(); setReward(false); setSpent(state.tr === 0 && state.ripe == null); paintBadges(); renderCart(); renderSearch(); renderOrders();
+  const known = Array.isArray(data.stack) ? data.stack.filter(id => VIEW_KEYS.includes(id) && !['category', 'checkout', 'done'].includes(id)) : [];
+  stack = known.length ? known : ['main'];
+  show(stack[stack.length - 1], 'none');
+  fit();
+}
+addEventListener('hashchange', () => {
+  if (location.hash !== '#reset') return;
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  location.replace(location.pathname);
+});
+window.claude?.hot?.snapshot?.(() => ({ points: state.points, hv: state.hv, tr: state.tr, stages: [...state.stages], ripe: state.ripe, waters: state.waters, cart: { ...state.cart }, orders: state.orders, stack: [...stack] }));
+window.claude?.hot?.ready ? window.claude.hot.ready(start) : start(window.claude?.hot?.data ?? load());
+</script>
+
+</body>
+</html>
